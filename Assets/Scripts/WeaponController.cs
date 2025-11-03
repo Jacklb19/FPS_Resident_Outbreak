@@ -17,18 +17,19 @@ public class WeaponController : MonoBehaviour
 
     [Header("Referencias")]
     public Camera fpsCam;
-    public ParticleSystem muzzleFlash;
-    public Transform muzzlePoint; // Punto donde sale el disparo
+    public ParticleSystem shootParticles;
 
     [Header("Audio")]
     public AudioClip shootSound;
     public AudioClip reloadSound;
-    public AudioClip emptySound; // Sonido cuando no hay balas
+    public AudioClip emptySound;
+    public AudioClip hitSound;
     private AudioSource audioSource;
 
     [Header("Efectos")]
-    public GameObject impactEffect; // Efecto de impacto en superficies
-    public float muzzleFlashDuration = 0.1f;
+    public GameObject impactEffect;
+    public GameObject bulletHoleDecal;
+    public float bulletHoleLifetime = 30f;
 
     private float nextFireTime = 0f;
     private bool isReloading = false;
@@ -36,17 +37,17 @@ public class WeaponController : MonoBehaviour
     void Start()
     {
         currentAmmo = maxAmmo;
-
+        
         // Obtener o agregar AudioSource
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-
+        
         // Configurar AudioSource
         audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 0f; // 2D sound para FPS
+        audioSource.spatialBlend = 0f;
     }
 
     void Update()
@@ -64,7 +65,6 @@ public class WeaponController : MonoBehaviour
             }
             else
             {
-                // Sonido de arma vacía
                 PlayEmptySound();
             }
         }
@@ -75,7 +75,7 @@ public class WeaponController : MonoBehaviour
             StartCoroutine(Reload());
         }
 
-        // Auto-recarga si se queda sin balas al intentar disparar
+        // Auto-recarga si se queda sin balas
         if (Input.GetButtonDown("Fire1") && currentAmmo <= 0 && reserveAmmo > 0 && !isReloading)
         {
             StartCoroutine(Reload());
@@ -92,29 +92,31 @@ public class WeaponController : MonoBehaviour
         // Reproducir sonido de disparo
         PlayShootSound();
 
-        // Efecto visual del disparo
-        if (muzzleFlash != null)
-        {
-            muzzleFlash.Play();
-
-            // Agregar luz temporal
-            StartCoroutine(MuzzleFlashLight());
-        }
+        // Efecto de muzzle flash
+        if (shootParticles != null)
+            shootParticles.Play();
 
         // Raycast para detectar impacto
         RaycastHit hit;
-        Vector3 rayOrigin = fpsCam.transform.position;
-        Vector3 rayDirection = fpsCam.transform.forward;
-
-        if (Physics.Raycast(rayOrigin, rayDirection, out hit, range))
+        if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
         {
             Debug.Log("Impacto en: " + hit.transform.name);
 
-            // Crear efecto de impacto en el punto de colisión
+            // Reproducir sonido de impacto
+            if (hitSound != null && audioSource != null)
+                audioSource.PlayOneShot(hitSound);
+
+            // Crear efecto de impacto visual
             if (impactEffect != null)
             {
                 GameObject impact = Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal));
                 Destroy(impact, 2f);
+            }
+
+            // Crear hueco de bala
+            if (bulletHoleDecal != null)
+            {
+                CreateBulletHole(hit);
             }
 
             // Detectar si es un zombie y aplicar daño
@@ -123,9 +125,10 @@ public class WeaponController : MonoBehaviour
             {
                 zombie.TakeDamage(damage);
                 Debug.Log("Daño aplicado al zombie: " + damage);
+                return;
             }
 
-            // También verificar en el padre (por si el collider está en un hijo)
+            // Verificar en el padre
             if (zombie == null)
             {
                 zombie = hit.transform.GetComponentInParent<ZombieHealth>();
@@ -133,12 +136,39 @@ public class WeaponController : MonoBehaviour
                 {
                     zombie.TakeDamage(damage);
                     Debug.Log("Daño aplicado al zombie (desde padre): " + damage);
+                    return;
                 }
             }
+
+            // Aplicar fuerza si tiene rigidbody
+            Rigidbody rb = hit.collider.GetComponent<Rigidbody>();
+            if (rb != null)
+                rb.AddForce(-hit.normal * 5f, ForceMode.Impulse);
         }
 
-        // Visualizar el rayo en el editor (solo para debug)
-        Debug.DrawRay(rayOrigin, rayDirection * range, Color.red, 1f);
+        // Debug ray
+        Debug.DrawRay(fpsCam.transform.position, fpsCam.transform.forward * range, Color.red, 1f);
+    }
+
+    void CreateBulletHole(RaycastHit hit)
+    {
+        // Crear el decal ligeramente separado de la superficie
+        Vector3 spawnPosition = hit.point + hit.normal * 0.01f;
+        
+        GameObject hole = Instantiate(
+            bulletHoleDecal,
+            spawnPosition,
+            Quaternion.LookRotation(hit.normal)
+        );
+
+        // Hacer hijo del objeto impactado
+        hole.transform.SetParent(hit.transform);
+
+        // Rotación aleatoria
+        hole.transform.Rotate(Vector3.forward, Random.Range(0f, 360f));
+
+        // Destruir después del tiempo
+        Destroy(hole, bulletHoleLifetime);
     }
 
     IEnumerator Reload()
@@ -149,7 +179,6 @@ public class WeaponController : MonoBehaviour
         isReloading = true;
         Debug.Log("Recargando...");
 
-        // Reproducir sonido de recarga
         PlayReloadSound();
 
         yield return new WaitForSeconds(reloadTime);
@@ -164,7 +193,6 @@ public class WeaponController : MonoBehaviour
         Debug.Log("Recarga completa. Munición actual: " + currentAmmo + " | Reserva: " + reserveAmmo);
     }
 
-    // Funciones de audio
     void PlayShootSound()
     {
         if (audioSource != null && shootSound != null)
@@ -189,28 +217,9 @@ public class WeaponController : MonoBehaviour
         }
     }
 
-    // Función para obtener munición (cuando el jugador recoge más balas)
     public void AddReserveAmmo(int amount)
     {
         reserveAmmo += amount;
         Debug.Log("Munición añadida. Reserva actual: " + reserveAmmo);
     }
-    IEnumerator MuzzleFlashLight()
-{
-    // Crear una luz temporal en la punta del cañón
-    GameObject lightObj = new GameObject("TempLight");
-    lightObj.transform.SetParent(muzzleFlash.transform);
-    lightObj.transform.localPosition = Vector3.zero;
-    
-    Light tempLight = lightObj.AddComponent<Light>();
-    tempLight.type = LightType.Point;
-    tempLight.intensity = 500f;
-    tempLight.range = 15f;
-    tempLight.color = new Color(1f, 0.8f, 0.5f); // Naranja
-    
-    yield return new WaitForSeconds(0.1f);
-    
-    Destroy(lightObj);
-}
-
 }
