@@ -2,18 +2,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-
 public class PlayerHealth : MonoBehaviour
 {
     [Header("Configuración de Vida")]
     public int maxHealth = 100;
     private int currentHealth;
-
-
-    [Header("UI")]
-    public Slider healthBar;
-    public Text healthText;
-
 
     [Header("Efectos")]
     public Image damageOverlay;
@@ -21,17 +14,14 @@ public class PlayerHealth : MonoBehaviour
     
     private float targetAlpha = 0f;
     
-    // AGREGAR ESTA PROPIEDAD
     public int CurrentHealth
     {
         get { return currentHealth; }
     }
 
-
     void Start()
     {
         currentHealth = maxHealth;
-        UpdateHealthUI();
         
         if (damageOverlay != null)
         {
@@ -40,7 +30,6 @@ public class PlayerHealth : MonoBehaviour
             damageOverlay.color = color;
         }
     }
-
 
     void Update()
     {
@@ -52,7 +41,6 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
@@ -60,7 +48,6 @@ public class PlayerHealth : MonoBehaviour
         
         Debug.Log("Jugador recibió " + damage + " de daño. Vida actual: " + currentHealth);
         
-        UpdateHealthUI();
         ShowDamageEffect();
 
         if (currentHealth <= 0)
@@ -69,29 +56,12 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-
     public void Heal(int amount)
     {
         currentHealth += amount;
         currentHealth = Mathf.Min(currentHealth, maxHealth);
-        UpdateHealthUI();
         Debug.Log("Jugador curado. Vida actual: " + currentHealth);
     }
-
-
-    void UpdateHealthUI()
-    {
-        if (healthBar != null)
-        {
-            healthBar.value = (float)currentHealth / maxHealth;
-        }
-
-        if (healthText != null)
-        {
-            healthText.text = currentHealth + " / " + maxHealth;
-        }
-    }
-
 
     void ShowDamageEffect()
     {
@@ -102,20 +72,16 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-
     System.Collections.IEnumerator FadeDamageEffect()
     {
         yield return new WaitForSeconds(0.1f);
         targetAlpha = 0f;
     }
 
-
     void Die()
     {
         Debug.Log("Jugador ha muerto");
-        
         GetComponent<CharacterController>().enabled = false;
-        
         Time.timeScale = 0f;
     }
 }
