@@ -1,65 +1,123 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+
 public class Zombie : MonoBehaviour
 {
-    [SerializeField] private int HP = 100;
+    [Header("Configuración de Ataque")]
+    public int attackDamage = 10;
+    public float attackRange = 2f;
+    public float attackCooldown = 2f;
+    
+    [Header("Movimiento")]
+    public float pursuitSpeed = 5.5f;
+    
+    private float lastAttackTime = 0f;
+    private Transform target;
     private Animator animator;
     private NavMeshAgent navAgent;
-    public Transform target;
+    private ZombieHealth zombieHealth;
+    private bool isAttacking = false;
+
 
     void Start()
     {
         animator = GetComponent<Animator>();
         navAgent = GetComponent<NavMeshAgent>();
+        zombieHealth = GetComponent<ZombieHealth>();
+        
+        navAgent.speed = pursuitSpeed;
+        
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            target = player.transform;
+            Debug.Log("Jugador encontrado: " + player.name);
+        }
+        else
+        {
+            Debug.LogWarning("No se encontró GameObject con tag 'Player'");
+        }
     }
+
 
     void Update()
     {
-        if (target != null)
+        if (target == null)
         {
-            navAgent.SetDestination(target.position);
+            Debug.LogWarning("Target es null");
+            animator.SetBool("isWalking", false);
+            return;
         }
 
-        // Control de animaci�n de caminar
-        if (navAgent.velocity.magnitude > 0.1f)
-        {
-            animator.SetBool("isWalking", true);
-        }
-        else
+        if (zombieHealth == null || zombieHealth.CurrentHealth <= 0)
         {
             animator.SetBool("isWalking", false);
+            navAgent.isStopped = true;
+            return;
         }
-    }
 
-    public void TakeDamage(int damageAmount)
-    {
-        HP -= damageAmount;
-        Debug.Log("Da�o recibido: " + damageAmount + " | HP actual: " + HP);
 
-        if (HP <= 0)
+        float distanceToTarget = Vector3.Distance(transform.position, target.position);
+        Debug.Log("Distancia al jugador: " + distanceToTarget);
+
+
+        // Si está en rango de ataque
+        if (distanceToTarget <= attackRange)
         {
-            // Elegir aleatoriamente entre las dos animaciones de muerte
-            int dieAnim = Random.Range(0, 2);
-            if (dieAnim == 0)
-            {
-                animator.SetTrigger("DIE1");
-                Debug.Log("Trigger DIE1 activado");
-            }
-            else
-            {
-                animator.SetTrigger("DIE2");
-                Debug.Log("Trigger DIE2 activado");
-            }
+            Debug.Log("Atacando al jugador");
+            navAgent.isStopped = true;
+            animator.SetBool("isWalking", false);
+            
+            // Rotar hacia el objetivo
+            Vector3 direction = (target.position - transform.position).normalized;
+            Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
 
-            Debug.Log("Zombi destruido");
-            Destroy(gameObject, 2f); // Espera 2 segundos para ver la animaci�n de muerte antes de destruirlo
+            // Atacar si ha pasado el cooldown
+            if (Time.time >= lastAttackTime + attackCooldown && !isAttacking)
+            {
+                StartCoroutine(PerformAttack());
+            }
         }
+        // Si está fuera de rango, perseguir
         else
         {
-            animator.SetTrigger("DAMAGE");
-            Debug.Log("Trigger DAMAGE activado | HP actual: " + HP);
+            navAgent.isStopped = false;
+            animator.SetBool("isWalking", true);
+            navAgent.SetDestination(target.position);  // ESTO ES IMPORTANTE
+            Debug.Log("Persiguiendo al jugador");
         }
     }
 
+
+    System.Collections.IEnumerator PerformAttack()
+    {
+        isAttacking = true;
+        animator.SetTrigger("DAMAGE");
+        
+        yield return new WaitForSeconds(0.5f);
+        
+        if (target != null && Vector3.Distance(transform.position, target.position) <= attackRange)
+        {
+            PlayerHealth playerHealth = target.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(attackDamage);
+                Debug.Log("Zombie atacó al jugador por " + attackDamage + " de daño");
+            }
+        }
+
+        lastAttackTime = Time.time;
+        
+        yield return new WaitForSeconds(1f);
+        isAttacking = false;
+    }
+
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
 }

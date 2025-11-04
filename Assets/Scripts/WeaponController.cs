@@ -8,6 +8,7 @@ public class WeaponController : MonoBehaviour
     public int damage = 25;
     public float fireRate = 0.5f;
     public float range = 100f;
+    public Sprite weaponIcon;
 
     [Header("Munición")]
     public int maxAmmo = 30;

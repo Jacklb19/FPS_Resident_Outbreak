@@ -17,14 +17,19 @@ public class ZombieHealth : MonoBehaviour
     private Animator animator;
     private bool isDead = false;
 
+    public int CurrentHealth
+    {
+        get { return currentHealth; }
+    }
+
     void Start()
     {
         currentHealth = maxHealth;
-        
+
         // Obtener componentes
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
-        
+
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -63,11 +68,13 @@ public class ZombieHealth : MonoBehaviour
         isDead = true;
         Debug.Log(gameObject.name + " ha muerto");
 
+
         // Reproducir sonido de muerte
         if (audioSource != null && deathSound != null)
         {
             audioSource.PlayOneShot(deathSound);
         }
+
 
         // Activar animación de muerte
         if (animator != null)
@@ -75,18 +82,30 @@ public class ZombieHealth : MonoBehaviour
             animator.SetTrigger("Death");
         }
 
+
         // Crear efecto de muerte
         if (deathEffect != null)
         {
             Instantiate(deathEffect, transform.position, Quaternion.identity);
         }
 
+
         // Desactivar componentes
         DisableEnemy();
+
+
+        // AGREGAR ESTO - Sumar puntos
+        GameUI gameUI = FindObjectOfType<GameUI>();
+        if (gameUI != null)
+        {
+            gameUI.AddScore(100);  // 100 puntos por zombie muerto
+        }
+
 
         // Destruir después de un tiempo (para que se complete la animación)
         Destroy(gameObject, 3f);
     }
+
 
     void DisableEnemy()
     {
