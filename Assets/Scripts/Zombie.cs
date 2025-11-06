@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-
 public class Zombie : MonoBehaviour
 {
     [Header("Configuración de Ataque")]
@@ -19,7 +18,6 @@ public class Zombie : MonoBehaviour
     private ZombieHealth zombieHealth;
     private bool isAttacking = false;
 
-
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -32,20 +30,13 @@ public class Zombie : MonoBehaviour
         if (player != null)
         {
             target = player.transform;
-            Debug.Log("Jugador encontrado: " + player.name);
-        }
-        else
-        {
-            Debug.LogWarning("No se encontró GameObject con tag 'Player'");
         }
     }
-
 
     void Update()
     {
         if (target == null)
         {
-            Debug.LogWarning("Target es null");
             animator.SetBool("isWalking", false);
             return;
         }
@@ -57,15 +48,11 @@ public class Zombie : MonoBehaviour
             return;
         }
 
-
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
-        Debug.Log("Distancia al jugador: " + distanceToTarget);
-
 
         // Si está en rango de ataque
         if (distanceToTarget <= attackRange)
         {
-            Debug.Log("Atacando al jugador");
             navAgent.isStopped = true;
             animator.SetBool("isWalking", false);
             
@@ -85,11 +72,9 @@ public class Zombie : MonoBehaviour
         {
             navAgent.isStopped = false;
             animator.SetBool("isWalking", true);
-            navAgent.SetDestination(target.position);  // ESTO ES IMPORTANTE
-            Debug.Log("Persiguiendo al jugador");
+            navAgent.SetDestination(target.position);
         }
     }
-
 
     System.Collections.IEnumerator PerformAttack()
     {
@@ -104,7 +89,6 @@ public class Zombie : MonoBehaviour
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(attackDamage);
-                Debug.Log("Zombie atacó al jugador por " + attackDamage + " de daño");
             }
         }
 
@@ -113,7 +97,6 @@ public class Zombie : MonoBehaviour
         yield return new WaitForSeconds(1f);
         isAttacking = false;
     }
-
 
     void OnDrawGizmosSelected()
     {
