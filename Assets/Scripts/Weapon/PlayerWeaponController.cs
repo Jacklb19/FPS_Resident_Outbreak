@@ -20,33 +20,37 @@ public class PlayerWeaponController : MonoBehaviour
         HandlePickupDetection();
     }
     
-    void HandleWeaponSwitching()
+void HandleWeaponSwitching()
+{
+    // Tecla 1: Slot 0
+    if (Input.GetKeyDown(KeyCode.Alpha1))
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            weaponInventory.SwitchToSlot(0);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            weaponInventory.SwitchToSlot(1);
-        }
+        weaponInventory.SwitchToSlot(0);
+    }
+    // Tecla 2: Slot 1
+    else if (Input.GetKeyDown(KeyCode.Alpha2))
+    {
+        weaponInventory.SwitchToSlot(1);
+    }
+}
+
+void HandleWeaponActions()
+{
+    Weapon activeWeapon = weaponInventory.GetActiveWeapon();
+    
+    // ═══ IMPORTANTE: Solo permitir disparar/recargar si hay arma ═══
+    if (activeWeapon == null) return;
+    
+    if (Input.GetMouseButton(0))
+    {
+        activeWeapon.TryShoot();
     }
     
-    void HandleWeaponActions()
+    if (Input.GetKeyDown(KeyCode.R))
     {
-        Weapon activeWeapon = weaponInventory.GetActiveWeapon();
-        if (activeWeapon == null) return;
-        
-        if (Input.GetMouseButton(0))
-        {
-            activeWeapon.TryShoot();
-        }
-        
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            activeWeapon.StartReload();
-        }
+        activeWeapon.StartReload();
     }
+}
     
     void HandlePickupDetection()
     {
