@@ -16,7 +16,7 @@ MonoBehaviour:
   weaponID: weapon_001
   shootingDelay: 0.4
   bulletsPerShot: 1
-  spread: 0.1
+  spread: 0
   damage: 25
   magazineSize: 7
   reloadTime: 2
@@ -24,17 +24,17 @@ MonoBehaviour:
   raycastDistance: 1000
   hitMask:
     serializedVersion: 2
-    m_Bits: 704
+    m_Bits: 2039
   modelPrefab: {fileID: 3125563116616515477, guid: 7c1838d1d75aa17409b6caeda1808029, type: 3}
-  impactPrefab: {fileID: 8297792223645418339, guid: d3c8c1e37b30d244fbb0518c6be1218f, type: 3}
+  impactPrefab: {fileID: 100002, guid: ba261927bb2ae4244b20b0eb77a96415, type: 3}
   spawnPosition: {x: 0.2, y: -0.25, z: 0.9}
   spawnRotation: {x: 0, y: -180, z: 0}
   shootSound: {fileID: 8300000, guid: eee81c0d0cbc0224fba9b246498fe67c, type: 3}
   reloadSound: {fileID: 8300000, guid: 5a77252a71e1407459a4b8f8bd293248, type: 3}
   emptyMagazineSound: {fileID: 8300000, guid: 7e9ca1c3855e6f242b8ac880d0536a68, type: 3}
   impactSound: {fileID: 0}
-  idleAnimation: {fileID: 0}
-  recoilAnimation: {fileID: 0}
-  reloadAnimation: {fileID: 0}
+  idleAnimation: {fileID: 7400000, guid: 78dd3c91b938d8545902490226f29487, type: 2}
+  recoilAnimation: {fileID: 7400000, guid: a03286bfdbba1da40ac73b8721e28110, type: 2}
+  reloadAnimation: {fileID: 7400000, guid: ba582979386d7834c96fa15ed865060f, type: 2}
   weaponIcon: {fileID: 21300000, guid: d4a6e98a8468a664d9efc5d5ac6bdcd9, type: 3}
   bulletIcon: {fileID: 21300000, guid: e6706302057787a4580929ee6a24ef5e, type: 3}

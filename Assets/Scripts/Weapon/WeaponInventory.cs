@@ -6,6 +6,9 @@ public class WeaponInventory : MonoBehaviour
     public Transform weaponSlot1;
     public Transform weaponSlot2;
     
+    [Header("Drop Settings")]
+    public LayerMask groundLayer; // ← Asignar en Inspector
+    
     private Weapon[] weapons = new Weapon[2];
     private int activeSlotIndex = -1;
     
@@ -15,16 +18,27 @@ public class WeaponInventory : MonoBehaviour
         
         Transform targetSlot = slotIndex == 0 ? weaponSlot1 : weaponSlot2;
         
-        // Destruir arma anterior si existe
         if (weapons[slotIndex] != null)
         {
             Destroy(weapons[slotIndex].gameObject);
         }
         
-        // Instanciar nueva arma
         GameObject weaponObj = Instantiate(weaponPrefab, targetSlot);
         weaponObj.transform.localPosition = weaponInstance.weaponData.spawnPosition;
         weaponObj.transform.localRotation = Quaternion.Euler(weaponInstance.weaponData.spawnRotation);
+        
+        Rigidbody rb = weaponObj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+        
+        Collider col = weaponObj.GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
         
         Weapon weapon = weaponObj.GetComponent<Weapon>();
         if (weapon == null)
@@ -32,13 +46,12 @@ public class WeaponInventory : MonoBehaviour
             weapon = weaponObj.AddComponent<Weapon>();
         }
         
+        weapon.enabled = true;
         weapon.Initialize(weaponInstance);
         weapons[slotIndex] = weapon;
         
-        // Desactivar inicialmente
         weaponObj.SetActive(false);
         
-        // Si no hay arma activa, activar esta automáticamente
         if (activeSlotIndex == -1)
         {
             SwitchToSlot(slotIndex);
@@ -51,20 +64,17 @@ public class WeaponInventory : MonoBehaviour
         if (weapons[slotIndex] == null) return;
         if (activeSlotIndex == slotIndex) return;
         
-        // Desequipar arma actual
         if (activeSlotIndex != -1 && weapons[activeSlotIndex] != null)
         {
-            weapons[activeSlotIndex].OnUnequip(); // ← Solo esto es nuevo
+            weapons[activeSlotIndex].OnUnequip();
             weapons[activeSlotIndex].gameObject.SetActive(false);
         }
         
-        // Equipar nueva arma
         activeSlotIndex = slotIndex;
         weapons[activeSlotIndex].gameObject.SetActive(true);
-        weapons[activeSlotIndex].OnEquip(); // ← Solo esto es nuevo
+        weapons[activeSlotIndex].OnEquip();
     }
     
-    // ═══ MÉTODO ORIGINAL - Crear pickup en la posición donde se recogió ═══
     public GameObject DropWeapon(int slotIndex, Vector3 dropPosition)
     {
         if (slotIndex < 0 || slotIndex > 1) return null;
@@ -74,33 +84,56 @@ public class WeaponInventory : MonoBehaviour
         WeaponInstance weaponInstance = weapon.GetWeaponInstance();
         WeaponData weaponData = weaponInstance.weaponData;
         
-        weapon.OnUnequip(); // ← Solo esto es nuevo
+        weapon.OnUnequip();
         
-        // ═══ TU SISTEMA ORIGINAL ═══
-        // Crear pickup usando el modelPrefab del WeaponData
-        GameObject droppedWeapon = Instantiate(weaponData.modelPrefab, dropPosition, Quaternion.identity);
+        // Calcular posición sobre el suelo
+        Vector3 finalPosition = CalculateGroundPosition(dropPosition, weaponData);
         
-        // Asegurarse que tenga WeaponPickup
+        // Crear el arma en la posición correcta
+        GameObject droppedWeapon = Instantiate(weaponData.modelPrefab, finalPosition, Quaternion.identity);
+        
+        // Activar física
+        Rigidbody rb = droppedWeapon.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        
+        // Activar collider
+        Collider col = droppedWeapon.GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = true;
+        }
+        
+        // Configurar WeaponPickup
         WeaponPickup pickup = droppedWeapon.GetComponent<WeaponPickup>();
         if (pickup == null)
         {
             pickup = droppedWeapon.AddComponent<WeaponPickup>();
         }
         
-        // Inicializar el pickup con los datos actuales
+        // Desactivar script Weapon
+        Weapon weaponScript = droppedWeapon.GetComponent<Weapon>();
+        if (weaponScript != null)
+        {
+            weaponScript.enabled = false;
+        }
+        
         pickup.weaponData = weaponData;
         pickup.Initialize(weaponData, weaponInstance);
         
-        // Destruir arma del inventario
+        // Limpiar inventario
         Destroy(weapon.gameObject);
         weapons[slotIndex] = null;
         
-        // Si era el arma activa, resetear
         if (activeSlotIndex == slotIndex)
         {
             activeSlotIndex = -1;
             
-            // Activar el otro slot si existe
             int otherSlot = slotIndex == 0 ? 1 : 0;
             if (weapons[otherSlot] != null)
             {
@@ -109,6 +142,57 @@ public class WeaponInventory : MonoBehaviour
         }
         
         return droppedWeapon;
+    }
+    
+    private Vector3 CalculateGroundPosition(Vector3 dropPosition, WeaponData weaponData)
+    {
+        // Raycast hacia abajo para encontrar el suelo
+        Vector3 rayStart = dropPosition + Vector3.up * 2f;
+        RaycastHit groundHit;
+        
+        // ═══ ERROR 1 CORREGIDO: groundLayer en vez de pickupLayer ═══
+        bool hitGround = Physics.Raycast(rayStart, Vector3.down, out groundHit, 5f, groundLayer);
+        
+        if (!hitGround)
+        {
+            Debug.LogWarning($"[WeaponInventory] No se encontró suelo debajo de {dropPosition}");
+            return dropPosition + Vector3.up * 0.2f;
+        }
+        
+        // Crear arma temporalmente para medir su collider
+        GameObject tempWeapon = Instantiate(weaponData.modelPrefab, Vector3.zero, Quaternion.identity);
+        tempWeapon.name = "TempWeapon_Measuring";
+        
+        Collider weaponCollider = tempWeapon.GetComponent<Collider>();
+        float offset = 0.1f;
+        
+        if (weaponCollider != null)
+        {
+            weaponCollider.enabled = true;
+            tempWeapon.transform.position = Vector3.zero;
+            
+            Bounds bounds = weaponCollider.bounds;
+            float pivotToBottom = tempWeapon.transform.position.y - bounds.min.y;
+            
+            offset = pivotToBottom;
+            
+            if (offset <= 0.01f)
+            {
+                offset = bounds.extents.y;
+            }
+            
+            Debug.Log($"[WeaponInventory] {weaponData.weaponName} - Offset calculado: {offset:F3}m");
+        }
+        else
+        {
+            Debug.LogWarning($"[WeaponInventory] {weaponData.weaponName} no tiene Collider");
+        }
+        
+        Destroy(tempWeapon);
+        
+        Vector3 finalPosition = groundHit.point + Vector3.up * offset;
+        
+        return finalPosition;
     }
     
     public bool HasFreeSlot(out int freeSlot)

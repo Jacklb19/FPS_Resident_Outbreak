@@ -86,37 +86,37 @@ public class PlayerWeaponController : MonoBehaviour
         currentTargetPickup = null;
     }
     
-    void PickupWeapon(WeaponPickup pickup, Vector3 pickupPosition)
+void PickupWeapon(WeaponPickup pickup, Vector3 pickupPosition)
+{
+    WeaponInstance weaponInstance = pickup.GetWeaponInstance();
+    
+    // ═══ USAR LA POSICIÓN DEL PICKUP, NO DEL HIT POINT ═══
+    Vector3 originalPickupPosition = pickup.transform.position;
+    
+    if (weaponInventory.HasFreeSlot(out int freeSlot))
     {
-        WeaponInstance weaponInstance = pickup.GetWeaponInstance();
-        
-        if (weaponInventory.HasFreeSlot(out int freeSlot))
-        {
-            // Hay slot libre, equipar directamente
-            weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, freeSlot);
-            Destroy(pickup.gameObject);
-        }
-        else
-        {
-            // No hay slots libres, intercambiar con el arma activa
-            int activeSlot = weaponInventory.GetActiveSlotIndex();
-            
-            // ═══ CAMBIO: Pasar la posición donde estaba el pickup ═══
-            GameObject droppedWeapon = weaponInventory.DropWeapon(activeSlot, pickupPosition);
-            
-            if (droppedWeapon != null)
-            {
-                // Ya se creó en pickupPosition, solo ajustar rotación
-                droppedWeapon.transform.rotation = Quaternion.identity;
-            }
-            
-            weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, activeSlot);
-            Destroy(pickup.gameObject);
-        }
-        
-        previousTargetPickup = null;
-        currentTargetPickup = null;
+        weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, freeSlot);
+        Destroy(pickup.gameObject);
     }
+    else
+    {
+        int activeSlot = weaponInventory.GetActiveSlotIndex();
+        
+        // Usar la posición original del pickup
+        GameObject droppedWeapon = weaponInventory.DropWeapon(activeSlot, originalPickupPosition);
+        
+        if (droppedWeapon != null)
+        {
+            droppedWeapon.transform.rotation = Quaternion.identity;
+        }
+        
+        weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, activeSlot);
+        Destroy(pickup.gameObject);
+    }
+    
+    previousTargetPickup = null;
+    currentTargetPickup = null;
+}
     
     public Weapon GetActiveWeapon() => weaponInventory.GetActiveWeapon();
     public Weapon GetWeaponInSlot(int slot) => weaponInventory.GetWeaponInSlot(slot);

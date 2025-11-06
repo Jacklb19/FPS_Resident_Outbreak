@@ -10,32 +10,40 @@ public class WeaponPickup : MonoBehaviour
     
     void Awake()
     {
-        // Configurar Rigidbody
+        // Obtener o crear Rigidbody
         rb = GetComponent<Rigidbody>();
         if (rb == null)
         {
             rb = gameObject.AddComponent<Rigidbody>();
         }
         
-        // Configuración del Rigidbody
+        // ═══ ASEGURAR que la física esté activa en pickups ═══
+        rb.isKinematic = false;
+        rb.useGravity = true;
         rb.mass = 1f;
         rb.drag = 0.5f;
         rb.angularDrag = 0.5f;
-        rb.useGravity = true;
-        rb.isKinematic = false;
+        
+        // ═══ ASEGURAR que el collider esté activo ═══
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = true;
+            col.isTrigger = false;  // Collider normal, no trigger
+        }
         
         // Configurar Outline
         outlines = GetComponentsInChildren<Outline>(true);
         ShowOutline(false);
         
-        // Desactivar Animator si existe
+        // Desactivar Animator
         Animator animator = GetComponentInChildren<Animator>();
         if (animator != null)
         {
             animator.enabled = false;
         }
         
-        // Desactivar script Weapon si existe
+        // ═══ DESACTIVAR script Weapon ═══
         Weapon weaponScript = GetComponent<Weapon>();
         if (weaponScript != null)
         {
