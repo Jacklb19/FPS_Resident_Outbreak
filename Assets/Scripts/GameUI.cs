@@ -58,48 +58,53 @@ public class GameUI : MonoBehaviour
 
     void UpdateAmmoDisplay()
     {
-        Weapon currentWeapon = GetActiveWeapon();
+        PlayerWeaponController playerWeaponController = FindObjectOfType<PlayerWeaponController>();
 
-        if (currentWeapon != null)
+        if (playerWeaponController != null)
         {
-            int currentAmmo = currentWeapon.GetCurrentAmmo();
-            int totalAmmo = currentWeapon.GetTotalAmmo();
+            Weapon currentWeapon = playerWeaponController.GetActiveWeapon();
 
-            if (magazineAmmoText != null)
+            if (currentWeapon != null)
             {
-                magazineAmmoText.text = currentAmmo.ToString();
-                magazineAmmoText.gameObject.SetActive(true);
-            }
+                int currentAmmo = currentWeapon.GetCurrentAmmo();
+                int totalAmmo = currentWeapon.GetTotalAmmo();
 
-            if (totalAmmoText != null)
-            {
-                totalAmmoText.text = totalAmmo.ToString();
-                totalAmmoText.gameObject.SetActive(true);
-            }
-
-            if (ammoTypeIcon != null && currentWeapon.weaponData != null)
-            {
-                if (currentWeapon.weaponData.bulletIcon != null)
+                if (magazineAmmoText != null)
                 {
-                    ammoTypeIcon.sprite = currentWeapon.weaponData.bulletIcon;
-                    ammoTypeIcon.gameObject.SetActive(true);
+                    magazineAmmoText.text = currentAmmo.ToString();
+                    magazineAmmoText.gameObject.SetActive(true);
                 }
-                else
+
+                if (totalAmmoText != null)
                 {
+                    totalAmmoText.text = totalAmmo.ToString();
+                    totalAmmoText.gameObject.SetActive(true);
+                }
+
+                if (ammoTypeIcon != null && currentWeapon.weaponData != null)
+                {
+                    if (currentWeapon.weaponData.bulletIcon != null)
+                    {
+                        ammoTypeIcon.sprite = currentWeapon.weaponData.bulletIcon;
+                        ammoTypeIcon.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        ammoTypeIcon.gameObject.SetActive(false);
+                    }
+                }
+            }
+            else
+            {
+                if (magazineAmmoText != null)
+                    magazineAmmoText.gameObject.SetActive(false);
+
+                if (totalAmmoText != null)
+                    totalAmmoText.gameObject.SetActive(false);
+
+                if (ammoTypeIcon != null)
                     ammoTypeIcon.gameObject.SetActive(false);
-                }
             }
-        }
-        else
-        {
-            if (magazineAmmoText != null)
-                magazineAmmoText.gameObject.SetActive(false);
-
-            if (totalAmmoText != null)
-                totalAmmoText.gameObject.SetActive(false);
-
-            if (ammoTypeIcon != null)
-                ammoTypeIcon.gameObject.SetActive(false);
         }
     }
 
@@ -115,82 +120,52 @@ public class GameUI : MonoBehaviour
 
     void UpdateWeaponDisplay()
     {
-        Weapon currentWeapon = GetActiveWeapon();
-
-        if (currentWeapon != null)
+        PlayerWeaponController playerWeaponController = FindObjectOfType<PlayerWeaponController>();
+        
+        if (playerWeaponController != null)
         {
-            if (activeWeaponIcon != null)
+            Weapon currentWeapon = playerWeaponController.GetActiveWeapon();
+            
+            if (currentWeapon != null)
             {
-                activeWeaponIcon.gameObject.SetActive(true);
-                if (currentWeapon.weaponData != null && currentWeapon.weaponData.weaponIcon != null)
+                if (activeWeaponIcon != null)
                 {
-                    activeWeaponIcon.sprite = currentWeapon.weaponData.weaponIcon;
-                }
-            }
-
-            Weapon secondaryWeapon = GetInactiveWeapon();
-
-            if (unActiveWeaponIcon != null)
-            {
-                if (secondaryWeapon != null && secondaryWeapon.weaponData != null)
-                {
-                    if (secondaryWeapon.weaponData.weaponIcon != null)
+                    activeWeaponIcon.gameObject.SetActive(true);
+                    if (currentWeapon.weaponData != null && currentWeapon.weaponData.weaponIcon != null)
                     {
-                        unActiveWeaponIcon.sprite = secondaryWeapon.weaponData.weaponIcon;
-                        unActiveWeaponIcon.gameObject.SetActive(true);
+                        activeWeaponIcon.sprite = currentWeapon.weaponData.weaponIcon;
                     }
                 }
-                else
+
+                int activeSlot = playerWeaponController.GetActiveSlotIndex();
+                int inactiveSlot = 1 - activeSlot;
+                Weapon secondaryWeapon = playerWeaponController.GetWeaponInSlot(inactiveSlot);
+
+                if (unActiveWeaponIcon != null)
                 {
-                    unActiveWeaponIcon.gameObject.SetActive(false);
+                    if (secondaryWeapon != null && secondaryWeapon.weaponData != null)
+                    {
+                        if (secondaryWeapon.weaponData.weaponIcon != null)
+                        {
+                            unActiveWeaponIcon.sprite = secondaryWeapon.weaponData.weaponIcon;
+                            unActiveWeaponIcon.gameObject.SetActive(true);
+                        }
+                    }
+                    else
+                    {
+                        unActiveWeaponIcon.gameObject.SetActive(false);
+                    }
                 }
             }
-        }
-        else
-        {
-            if (activeWeaponIcon != null)
-                activeWeaponIcon.gameObject.SetActive(false);
-
-            if (unActiveWeaponIcon != null)
-                unActiveWeaponIcon.gameObject.SetActive(false);
-        }
-    }
-
-    private Weapon GetActiveWeapon()
-    {
-        if (WeaponManager.instance == null)
-            return null;
-
-        Transform activeSlot = WeaponManager.instance.GetActiveSlot();
-        
-        if (activeSlot != null && activeSlot.childCount > 0)
-        {
-            return activeSlot.GetChild(0).GetComponent<Weapon>();
-        }
-
-        return null;
-    }
-
-    private Weapon GetInactiveWeapon()
-    {
-        if (WeaponManager.instance == null)
-            return null;
-
-        Transform activeSlot = WeaponManager.instance.GetActiveSlot();
-        Transform[] allSlots = WeaponManager.instance.GetAllSlots();
-
-        if (allSlots != null)
-        {
-            foreach (Transform slot in allSlots)
+            else
             {
-                if (slot != activeSlot && slot.childCount > 0)
-                {
-                    return slot.GetChild(0).GetComponent<Weapon>();
-                }
+                if (activeWeaponIcon != null)
+                    activeWeaponIcon.gameObject.SetActive(false);
+
+                if (unActiveWeaponIcon != null)
+                    unActiveWeaponIcon.gameObject.SetActive(false);
             }
         }
-
-        return null;
     }
 
     public void AddScore(int points)
@@ -236,7 +211,8 @@ public class GameUI : MonoBehaviour
         if (crosshairImage == null)
             return;
 
-        Weapon currentWeapon = GetActiveWeapon();
+        PlayerWeaponController playerWeaponController = FindObjectOfType<PlayerWeaponController>();
+        Weapon currentWeapon = playerWeaponController != null ? playerWeaponController.GetActiveWeapon() : null;
 
         if (currentWeapon != null)
         {
