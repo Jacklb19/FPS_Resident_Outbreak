@@ -3,222 +3,142 @@ using UnityEngine;
 public class WeaponInventory : MonoBehaviour
 {
     [Header("Weapon Slots")]
-    private Weapon[] weaponSlots = new Weapon[2];
-    private int activeSlotIndex = 0;
+    public Transform weaponSlot1;
+    public Transform weaponSlot2;
     
-    [Header("Weapon Holder")]
-    public Transform weaponHolder;
-    
-    void Start()
-    {
-        // VALIDACIÓN: Asegurar que weaponHolder está asignado
-        if (weaponHolder == null)
-        {
-            Debug.LogError("❌ WeaponHolder NO está asignado en WeaponInventory! Búscalo automáticamente...");
-            
-            // Intentar encontrarlo automáticamente
-            Transform mainCamera = Camera.main?.transform;
-            if (mainCamera != null)
-            {
-                weaponHolder = mainCamera.Find("WeaponHolder");
-                
-                if (weaponHolder == null)
-                {
-                    Debug.LogWarning("⚠️ WeaponHolder no encontrado. Creándolo automáticamente...");
-                    GameObject holderObj = new GameObject("WeaponHolder");
-                    holderObj.transform.SetParent(mainCamera);
-                    holderObj.transform.localPosition = new Vector3(0.5f, -0.3f, 0.5f);
-                    holderObj.transform.localRotation = Quaternion.identity;
-                    weaponHolder = holderObj.transform;
-                    Debug.Log("✅ WeaponHolder creado automáticamente");
-                }
-                else
-                {
-                    Debug.Log("✅ WeaponHolder encontrado automáticamente");
-                }
-            }
-            else
-            {
-                Debug.LogError("❌ No se encontró MainCamera. Asigna manualmente weaponHolder.");
-            }
-        }
-        else
-        {
-            Debug.Log("✅ WeaponHolder asignado correctamente: " + weaponHolder.name);
-        }
-    }
-    
-    public Weapon GetActiveWeapon()
-    {
-        return weaponSlots[activeSlotIndex];
-    }
-    
-    public Weapon GetWeaponInSlot(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= weaponSlots.Length)
-            return null;
-        
-        return weaponSlots[slotIndex];
-    }
-    
-    public int GetActiveSlotIndex()
-    {
-        return activeSlotIndex;
-    }
-    
-    public bool HasFreeSlot(out int freeSlotIndex)
-    {
-        for (int i = 0; i < weaponSlots.Length; i++)
-        {
-            if (weaponSlots[i] == null)
-            {
-                freeSlotIndex = i;
-                return true;
-            }
-        }
-        
-        freeSlotIndex = -1;
-        return false;
-    }
+    private Weapon[] weapons = new Weapon[2];
+    private int activeSlotIndex = -1;
     
     public void EquipWeapon(GameObject weaponPrefab, WeaponInstance weaponInstance, int slotIndex)
     {
-        // VALIDACIÓN CRÍTICA
-        if (weaponHolder == null)
+        if (slotIndex < 0 || slotIndex > 1) return;
+        
+        Transform targetSlot = slotIndex == 0 ? weaponSlot1 : weaponSlot2;
+        
+        // Destruir arma anterior si existe
+        if (weapons[slotIndex] != null)
         {
-            Debug.LogError("❌ CRITICAL: weaponHolder es NULL en EquipWeapon()");
-            return;
+            Destroy(weapons[slotIndex].gameObject);
         }
         
-        if (weaponPrefab == null)
+        // Instanciar nueva arma
+        GameObject weaponObj = Instantiate(weaponPrefab, targetSlot);
+        weaponObj.transform.localPosition = weaponInstance.weaponData.spawnPosition;
+        weaponObj.transform.localRotation = Quaternion.Euler(weaponInstance.weaponData.spawnRotation);
+        
+        Weapon weapon = weaponObj.GetComponent<Weapon>();
+        if (weapon == null)
         {
-            Debug.LogError("❌ weaponPrefab es NULL en EquipWeapon()");
-            return;
+            weapon = weaponObj.AddComponent<Weapon>();
         }
         
-        if (weaponInstance == null || weaponInstance.weaponData == null)
+        weapon.Initialize(weaponInstance);
+        weapons[slotIndex] = weapon;
+        
+        // Desactivar inicialmente
+        weaponObj.SetActive(false);
+        
+        // Si no hay arma activa, activar esta automáticamente
+        if (activeSlotIndex == -1)
         {
-            Debug.LogError("❌ weaponInstance o weaponData es NULL");
-            return;
+            SwitchToSlot(slotIndex);
         }
-        
-        // Si hay arma en ese slot, eliminarla
-        if (weaponSlots[slotIndex] != null)
-        {
-            Destroy(weaponSlots[slotIndex].gameObject);
-        }
-        
-        // Instanciar nueva arma como hijo del weaponHolder
-        GameObject newWeaponObj = Instantiate(weaponPrefab, weaponHolder);
-        Debug.Log("✅ Arma instanciada: " + newWeaponObj.name + " en slot " + slotIndex);
-        
-        // Posicionar según WeaponData
-        newWeaponObj.transform.localPosition = weaponInstance.weaponData.spawnPosition;
-        newWeaponObj.transform.localEulerAngles = weaponInstance.weaponData.spawnRotation;
-        
-        Weapon weaponComponent = newWeaponObj.GetComponent<Weapon>();
-        if (weaponComponent == null)
-        {
-            weaponComponent = newWeaponObj.AddComponent<Weapon>();
-        }
-        
-        weaponComponent.Initialize(weaponInstance);
-        
-        // Desactivar física al equipar
-        Rigidbody rb = newWeaponObj.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
-        
-        Collider col = newWeaponObj.GetComponent<Collider>();
-        if (col != null)
-        {
-            col.enabled = false;
-        }
-        
-        // Remover WeaponPickup y Outline si existen (ya están equipados)
-        WeaponPickup pickup = newWeaponObj.GetComponent<WeaponPickup>();
-        if (pickup != null)
-        {
-            Destroy(pickup);
-        }
-        
-        Outline outline = newWeaponObj.GetComponent<Outline>();
-        if (outline != null)
-        {
-            Destroy(outline);
-        }
-        
-        weaponSlots[slotIndex] = weaponComponent;
-        
-        // Si este es el slot activo, activar visualmente
-        newWeaponObj.SetActive(slotIndex == activeSlotIndex);
-        
-        Debug.Log("✅ Arma equipada exitosamente en slot " + slotIndex);
     }
     
     public void SwitchToSlot(int slotIndex)
     {
-        if (slotIndex < 0 || slotIndex >= weaponSlots.Length)
-            return;
+        if (slotIndex < 0 || slotIndex > 1) return;
+        if (weapons[slotIndex] == null) return;
+        if (activeSlotIndex == slotIndex) return;
         
-        if (weaponSlots[slotIndex] == null)
-            return;
-        
-        if (activeSlotIndex == slotIndex)
-            return;
-        
-        // Desactivar arma actual
-        if (weaponSlots[activeSlotIndex] != null)
+        // Desequipar arma actual
+        if (activeSlotIndex != -1 && weapons[activeSlotIndex] != null)
         {
-            weaponSlots[activeSlotIndex].gameObject.SetActive(false);
+            weapons[activeSlotIndex].OnUnequip(); // ← Solo esto es nuevo
+            weapons[activeSlotIndex].gameObject.SetActive(false);
         }
         
-        // Activar nueva arma
+        // Equipar nueva arma
         activeSlotIndex = slotIndex;
-        weaponSlots[activeSlotIndex].gameObject.SetActive(true);
-        
-        Debug.Log("Cambiado a slot: " + slotIndex);
+        weapons[activeSlotIndex].gameObject.SetActive(true);
+        weapons[activeSlotIndex].OnEquip(); // ← Solo esto es nuevo
     }
     
-    public GameObject DropWeapon(int slotIndex)
+    // ═══ MÉTODO ORIGINAL - Crear pickup en la posición donde se recogió ═══
+    public GameObject DropWeapon(int slotIndex, Vector3 dropPosition)
     {
-        if (weaponSlots[slotIndex] == null)
-            return null;
+        if (slotIndex < 0 || slotIndex > 1) return null;
+        if (weapons[slotIndex] == null) return null;
         
-        GameObject weaponObj = weaponSlots[slotIndex].gameObject;
+        Weapon weapon = weapons[slotIndex];
+        WeaponInstance weaponInstance = weapon.GetWeaponInstance();
+        WeaponData weaponData = weaponInstance.weaponData;
         
-        // Desparentar del weaponHolder
-        weaponObj.transform.SetParent(null);
+        weapon.OnUnequip(); // ← Solo esto es nuevo
         
-        // Activar física
-        Rigidbody rb = weaponObj.GetComponent<Rigidbody>();
-        if (rb != null)
+        // ═══ TU SISTEMA ORIGINAL ═══
+        // Crear pickup usando el modelPrefab del WeaponData
+        GameObject droppedWeapon = Instantiate(weaponData.modelPrefab, dropPosition, Quaternion.identity);
+        
+        // Asegurarse que tenga WeaponPickup
+        WeaponPickup pickup = droppedWeapon.GetComponent<WeaponPickup>();
+        if (pickup == null)
         {
-            rb.isKinematic = false;
-            rb.useGravity = true;
+            pickup = droppedWeapon.AddComponent<WeaponPickup>();
         }
         
-        Collider col = weaponObj.GetComponent<Collider>();
-        if (col != null)
+        // Inicializar el pickup con los datos actuales
+        pickup.weaponData = weaponData;
+        pickup.Initialize(weaponData, weaponInstance);
+        
+        // Destruir arma del inventario
+        Destroy(weapon.gameObject);
+        weapons[slotIndex] = null;
+        
+        // Si era el arma activa, resetear
+        if (activeSlotIndex == slotIndex)
         {
-            col.enabled = true;
+            activeSlotIndex = -1;
+            
+            // Activar el otro slot si existe
+            int otherSlot = slotIndex == 0 ? 1 : 0;
+            if (weapons[otherSlot] != null)
+            {
+                SwitchToSlot(otherSlot);
+            }
         }
         
-        // Añadir componente WeaponPickup si no lo tiene
-        if (weaponObj.GetComponent<WeaponPickup>() == null)
-        {
-            WeaponPickup pickup = weaponObj.AddComponent<WeaponPickup>();
-            pickup.weaponData = weaponSlots[slotIndex].weaponData;
-            pickup.savedInstance = weaponSlots[slotIndex].GetWeaponInstance();
-        }
-        
-        weaponSlots[slotIndex] = null;
-        
-        Debug.Log("Arma dropeada del slot: " + slotIndex);
-        
-        return weaponObj;
+        return droppedWeapon;
     }
+    
+    public bool HasFreeSlot(out int freeSlot)
+    {
+        if (weapons[0] == null)
+        {
+            freeSlot = 0;
+            return true;
+        }
+        if (weapons[1] == null)
+        {
+            freeSlot = 1;
+            return true;
+        }
+        
+        freeSlot = -1;
+        return false;
+    }
+    
+    public Weapon GetActiveWeapon()
+    {
+        if (activeSlotIndex == -1) return null;
+        return weapons[activeSlotIndex];
+    }
+    
+    public Weapon GetWeaponInSlot(int slot)
+    {
+        if (slot < 0 || slot > 1) return null;
+        return weapons[slot];
+    }
+    
+    public int GetActiveSlotIndex() => activeSlotIndex;
 }

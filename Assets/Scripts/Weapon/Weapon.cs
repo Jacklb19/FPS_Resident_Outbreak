@@ -9,11 +9,15 @@ public class Weapon : MonoBehaviour
     private float nextShotTime = 0f;
     private bool isReloading = false;
     
-    // ═══ NUEVO: Cooldown para sonido de arma vacía ═══
     private float lastEmptyClickTime = 0f;
-    private float emptyClickCooldown = 0.3f; // Tiempo entre sonidos de arma vacía
+    private float emptyClickCooldown = 0.3f;
     
     private AudioSource audioSource;
+    private Animator weaponAnimator; // ← NUEVO
+    
+    private static readonly int ShootTrigger = Animator.StringToHash("Shoot");
+    private static readonly int ReloadTrigger = Animator.StringToHash("Reload");
+    private static readonly int IsReloadingBool = Animator.StringToHash("IsReloading");
     
     void Awake()
     {
@@ -21,6 +25,13 @@ public class Weapon : MonoBehaviour
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        
+        // ← NUEVO
+        weaponAnimator = GetComponentInChildren<Animator>();
+        if (weaponAnimator != null)
+        {
+            weaponAnimator.enabled = false;
         }
     }
     
@@ -30,6 +41,32 @@ public class Weapon : MonoBehaviour
         weaponData = instance.weaponData;
     }
     
+    // ← NUEVO
+    public void OnEquip()
+    {
+        if (weaponAnimator != null)
+        {
+            weaponAnimator.enabled = true;
+            weaponAnimator.Rebind();
+            weaponAnimator.Update(0f);
+        }
+    }
+    
+    // ← NUEVO
+    public void OnUnequip()
+    {
+        if (weaponAnimator != null)
+        {
+            weaponAnimator.enabled = false;
+        }
+        
+        if (isReloading)
+        {
+            StopAllCoroutines();
+            isReloading = false;
+        }
+    }
+    
     public bool TryShoot()
     {
         if (isReloading || Time.time < nextShotTime)
@@ -37,7 +74,6 @@ public class Weapon : MonoBehaviour
         
         if (!weaponInstance.CanShoot())
         {
-            // ═══ SOLUCIÓN: Solo reproducir si ha pasado el cooldown ═══
             if (Time.time >= lastEmptyClickTime + emptyClickCooldown)
             {
                 PlaySound(weaponData.emptyMagazineSound);
@@ -55,6 +91,12 @@ public class Weapon : MonoBehaviour
     
     private void PerformShot()
     {
+        // ← NUEVO
+        if (weaponAnimator != null && weaponAnimator.enabled)
+        {
+            weaponAnimator.SetTrigger(ShootTrigger);
+        }
+        
         PlaySound(weaponData.shootSound);
         
         Camera mainCam = Camera.main;
@@ -64,7 +106,6 @@ public class Weapon : MonoBehaviour
         {
             Vector3 direction = mainCam.transform.forward;
             
-            // Aplicar spread
             direction.x += Random.Range(-weaponData.spread, weaponData.spread);
             direction.y += Random.Range(-weaponData.spread, weaponData.spread);
             direction.Normalize();
@@ -73,7 +114,6 @@ public class Weapon : MonoBehaviour
             
             if (Physics.Raycast(ray, out RaycastHit hit, weaponData.raycastDistance, weaponData.hitMask))
             {
-                // Impacto visual
                 if (weaponData.impactPrefab != null)
                 {
                     Quaternion rotation = Quaternion.LookRotation(hit.normal);
@@ -86,7 +126,6 @@ public class Weapon : MonoBehaviour
                 
                 PlaySound(weaponData.impactSound);
                 
-                // Daño a enemigos
                 IDamageable damageable = hit.collider.GetComponent<IDamageable>();
                 if (damageable != null)
                 {
@@ -117,12 +156,26 @@ public class Weapon : MonoBehaviour
     private IEnumerator ReloadCoroutine()
     {
         isReloading = true;
+        
+        // ← NUEVO
+        if (weaponAnimator != null && weaponAnimator.enabled)
+        {
+            weaponAnimator.SetTrigger(ReloadTrigger);
+            weaponAnimator.SetBool(IsReloadingBool, true);
+        }
+        
         PlaySound(weaponData.reloadSound);
         
         yield return new WaitForSeconds(weaponData.reloadTime);
         
         weaponInstance.Reload();
         isReloading = false;
+        
+        // ← NUEVO
+        if (weaponAnimator != null && weaponAnimator.enabled)
+        {
+            weaponAnimator.SetBool(IsReloadingBool, false);
+        }
     }
     
     private void PlaySound(AudioClip clip)

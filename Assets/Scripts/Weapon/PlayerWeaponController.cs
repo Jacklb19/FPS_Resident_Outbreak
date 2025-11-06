@@ -60,17 +60,14 @@ public class PlayerWeaponController : MonoBehaviour
             {
                 currentTargetPickup = pickup;
                 
-                // Si es un nuevo target, desactivar el anterior
                 if (previousTargetPickup != null && previousTargetPickup != currentTargetPickup)
                 {
                     previousTargetPickup.ShowOutline(false);
                 }
                 
-                // Activar outline del target actual
                 currentTargetPickup.ShowOutline(true);
                 previousTargetPickup = currentTargetPickup;
                 
-                // Recoger con F
                 if (Input.GetKeyDown(KeyCode.F))
                 {
                     PickupWeapon(pickup, hit.point);
@@ -80,7 +77,6 @@ public class PlayerWeaponController : MonoBehaviour
             }
         }
         
-        // Si no hay target, desactivar outline anterior
         if (previousTargetPickup != null)
         {
             previousTargetPickup.ShowOutline(false);
@@ -96,17 +92,21 @@ public class PlayerWeaponController : MonoBehaviour
         
         if (weaponInventory.HasFreeSlot(out int freeSlot))
         {
+            // Hay slot libre, equipar directamente
             weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, freeSlot);
             Destroy(pickup.gameObject);
         }
         else
         {
+            // No hay slots libres, intercambiar con el arma activa
             int activeSlot = weaponInventory.GetActiveSlotIndex();
-            GameObject droppedWeapon = weaponInventory.DropWeapon(activeSlot);
+            
+            // ═══ CAMBIO: Pasar la posición donde estaba el pickup ═══
+            GameObject droppedWeapon = weaponInventory.DropWeapon(activeSlot, pickupPosition);
             
             if (droppedWeapon != null)
             {
-                droppedWeapon.transform.position = pickupPosition;
+                // Ya se creó en pickupPosition, solo ajustar rotación
                 droppedWeapon.transform.rotation = Quaternion.identity;
             }
             
@@ -114,7 +114,6 @@ public class PlayerWeaponController : MonoBehaviour
             Destroy(pickup.gameObject);
         }
         
-        // Resetear referencias de outline
         previousTargetPickup = null;
         currentTargetPickup = null;
     }

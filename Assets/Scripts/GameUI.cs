@@ -168,6 +168,43 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    // ═══ NUEVO: Método para actualizar UI cuando cambias de arma ═══
+    public void UpdateWeaponUI(Weapon weapon)
+    {
+        if (weapon == null) return;
+
+        // Actualizar icono del arma activa
+        if (activeWeaponIcon != null && weapon.weaponData != null)
+        {
+            if (weapon.weaponData.weaponIcon != null)
+            {
+                activeWeaponIcon.sprite = weapon.weaponData.weaponIcon;
+                activeWeaponIcon.gameObject.SetActive(true);
+            }
+        }
+
+        // Actualizar munición
+        if (magazineAmmoText != null)
+        {
+            magazineAmmoText.text = weapon.GetCurrentAmmo().ToString();
+        }
+
+        if (totalAmmoText != null)
+        {
+            totalAmmoText.text = weapon.GetTotalAmmo().ToString();
+        }
+
+        // Actualizar icono de tipo de munición
+        if (ammoTypeIcon != null && weapon.weaponData != null)
+        {
+            if (weapon.weaponData.bulletIcon != null)
+            {
+                ammoTypeIcon.sprite = weapon.weaponData.bulletIcon;
+                ammoTypeIcon.gameObject.SetActive(true);
+            }
+        }
+    }
+
     public void AddScore(int points)
     {
         currentScore += points;

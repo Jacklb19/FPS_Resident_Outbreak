@@ -3,81 +3,88 @@ using UnityEngine;
 public class WeaponPickup : MonoBehaviour
 {
     public WeaponData weaponData;
-    public WeaponInstance savedInstance;
+    private WeaponInstance weaponInstance;
     
-    [Header("Pickup Settings")]
-    public float pickupDistance = 3f;
+    private Outline[] outlines;
+    private Rigidbody rb;
     
-    [Header("Outline Settings")]
-    public Color outlineColor = Color.white;
-    public float outlineWidth = 5f;
-    
-    private Outline outline;
+    void Awake()
+    {
+        // Configurar Rigidbody
+        rb = GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = gameObject.AddComponent<Rigidbody>();
+        }
+        
+        // Configuración del Rigidbody
+        rb.mass = 1f;
+        rb.drag = 0.5f;
+        rb.angularDrag = 0.5f;
+        rb.useGravity = true;
+        rb.isKinematic = false;
+        
+        // Configurar Outline
+        outlines = GetComponentsInChildren<Outline>(true);
+        ShowOutline(false);
+        
+        // Desactivar Animator si existe
+        Animator animator = GetComponentInChildren<Animator>();
+        if (animator != null)
+        {
+            animator.enabled = false;
+        }
+        
+        // Desactivar script Weapon si existe
+        Weapon weaponScript = GetComponent<Weapon>();
+        if (weaponScript != null)
+        {
+            weaponScript.enabled = false;
+        }
+    }
     
     void Start()
     {
-        // Asegurar que tiene Rigidbody y Collider
-        if (GetComponent<Rigidbody>() == null)
+        if (weaponInstance == null && weaponData != null)
         {
-            Rigidbody rb = gameObject.AddComponent<Rigidbody>();
-            rb.mass = 1f;
+            weaponInstance = new WeaponInstance(weaponData);
         }
-        
-        if (GetComponent<Collider>() == null)
-        {
-            BoxCollider col = gameObject.AddComponent<BoxCollider>();
-            col.size = Vector3.one * 0.5f;
-        }
-        
-        // Asegurar capa "Pickable"
-        int pickableLayer = LayerMask.NameToLayer("Pickable");
-        if (pickableLayer != -1)
-        {
-            gameObject.layer = pickableLayer;
-        }
-        else
-        {
-            Debug.LogWarning("Layer 'Pickable' no existe. Créalo en Project Settings > Tags and Layers");
-        }
-        
-        // Si no tiene instancia guardada, crear una nueva
-        if (savedInstance == null && weaponData != null)
-        {
-            savedInstance = new WeaponInstance(weaponData);
-        }
-        
-        // Configurar Outline
-        SetupOutline();
     }
     
-    void SetupOutline()
+    public void Initialize(WeaponData data, WeaponInstance instance)
     {
-        // Buscar o añadir componente Outline
-        outline = GetComponent<Outline>();
-        if (outline == null)
+        weaponData = data;
+        weaponInstance = instance;
+        
+        // Asegurar que el Rigidbody esté activo
+        if (rb != null)
         {
-            outline = gameObject.AddComponent<Outline>();
+            rb.isKinematic = false;
+            rb.useGravity = true;
         }
-        
-        // Configurar estilo
-        outline.OutlineMode = Outline.Mode.OutlineAll;
-        outline.OutlineColor = outlineColor;
-        outline.OutlineWidth = outlineWidth;
-        
-        // Desactivar por defecto
-        outline.enabled = false;
     }
     
     public void ShowOutline(bool show)
     {
-        if (outline != null)
+        if (outlines == null || outlines.Length == 0)
+            return;
+        
+        foreach (Outline outline in outlines)
         {
-            outline.enabled = show;
+            if (outline != null)
+            {
+                outline.enabled = show;
+            }
         }
     }
     
     public WeaponInstance GetWeaponInstance()
     {
-        return savedInstance;
+        if (weaponInstance == null && weaponData != null)
+        {
+            weaponInstance = new WeaponInstance(weaponData);
+        }
+        
+        return weaponInstance;
     }
 }
