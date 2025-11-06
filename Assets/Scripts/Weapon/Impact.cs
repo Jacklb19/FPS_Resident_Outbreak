@@ -7,8 +7,8 @@ public class Impact : MonoBehaviour
 
     private void Start()
     {
-        // ✅ Autodetectar Particle System
-        particleSystem = GetComponent<ParticleSystem>();
+        // ✅ Buscar en el objeto y en sus hijos
+        particleSystem = GetComponentInChildren<ParticleSystem>();
 
         if (particleSystem == null)
         {
@@ -17,11 +17,11 @@ public class Impact : MonoBehaviour
         else
         {
             particleSystem.Play();
-            Debug.Log($"Impact particles spawned at {transform.position}");
         }
 
         Destroy(gameObject, lifetime);
     }
+
 
     public void SetRotation(Vector3 normal)
     {

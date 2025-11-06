@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CinemachineTarget
   - Zombie
+  - Weapon
   layers:
   - Default
   - TransparentFX
@@ -17,7 +18,7 @@ TagManager:
   - Enemys
   - Fx
   - Props
-  - 
+  - Weapon
   - 
   - 
   - 

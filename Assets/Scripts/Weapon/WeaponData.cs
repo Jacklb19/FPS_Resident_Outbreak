@@ -47,4 +47,5 @@ public class WeaponData : ScriptableObject
 
     [Header("UI")]
     public Sprite weaponIcon;
+     public Sprite bulletIcon;  
 }

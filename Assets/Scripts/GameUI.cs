@@ -7,17 +7,18 @@ public class GameUI : MonoBehaviour
     [Header("Referencias")]
     public PlayerHealth playerHealth;
 
-    [Header("UI - Ammo")]
-    public TextMeshProUGUI ammoText;
+    [Header("UI - WeaponPanel del Asset")]
+    public TextMeshProUGUI magazineAmmoText;
+    public TextMeshProUGUI totalAmmoText;
+    public Image ammoTypeIcon;
+    public Image activeWeaponIcon;
+    public Image unActiveWeaponIcon;
+    public Image lethalIcon;
+    public Image tacticalIcon;
 
     [Header("UI - Salud")]
     public Slider playerHealthBar;
     public TextMeshProUGUI healthText;
-
-    [Header("UI - Arma")]
-    public TextMeshProUGUI weaponNameText;
-    public Image weaponIcon;
-    public Image secondaryWeaponIcon;
 
     [Header("UI - Puntuación")]
     public TextMeshProUGUI scoreText;
@@ -55,31 +56,52 @@ public class GameUI : MonoBehaviour
         UpdateCrosshair();
     }
 
-    // ===== MÉTODOS DE MUNICIÓN =====
-
     void UpdateAmmoDisplay()
     {
-        PlayerWeaponController playerWeaponController = FindObjectOfType<PlayerWeaponController>();
+        Weapon currentWeapon = GetActiveWeapon();
 
-        if (playerWeaponController != null && ammoText != null)
+        if (currentWeapon != null)
         {
-            Weapon currentWeapon = playerWeaponController.GetActiveWeapon();
+            int currentAmmo = currentWeapon.GetCurrentAmmo();
+            int totalAmmo = currentWeapon.GetTotalAmmo();
 
-            if (currentWeapon != null)
+            if (magazineAmmoText != null)
             {
-                int currentAmmo = currentWeapon.GetCurrentAmmo();
-                int totalAmmo = currentWeapon.GetTotalAmmo();
-                ammoText.text = currentAmmo + " / " + totalAmmo;
+                magazineAmmoText.text = currentAmmo.ToString();
+                magazineAmmoText.gameObject.SetActive(true);
             }
-            else
+
+            if (totalAmmoText != null)
             {
-                ammoText.text = "--- / ---";
+                totalAmmoText.text = totalAmmo.ToString();
+                totalAmmoText.gameObject.SetActive(true);
+            }
+
+            if (ammoTypeIcon != null && currentWeapon.weaponData != null)
+            {
+                if (currentWeapon.weaponData.bulletIcon != null)
+                {
+                    ammoTypeIcon.sprite = currentWeapon.weaponData.bulletIcon;
+                    ammoTypeIcon.gameObject.SetActive(true);
+                }
+                else
+                {
+                    ammoTypeIcon.gameObject.SetActive(false);
+                }
             }
         }
+        else
+        {
+            if (magazineAmmoText != null)
+                magazineAmmoText.gameObject.SetActive(false);
+
+            if (totalAmmoText != null)
+                totalAmmoText.gameObject.SetActive(false);
+
+            if (ammoTypeIcon != null)
+                ammoTypeIcon.gameObject.SetActive(false);
+        }
     }
-
-
-    // ===== MÉTODOS DE SALUD =====
 
     void UpdateHealthDisplay()
     {
@@ -91,85 +113,85 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    // ===== MÉTODOS DE ARMA =====
-
-void UpdateWeaponDisplay()
-{
-    PlayerWeaponController playerWeaponController = FindObjectOfType<PlayerWeaponController>();
-    
-    if (playerWeaponController != null)
+    void UpdateWeaponDisplay()
     {
-        // Arma ACTIVA
-        Weapon currentWeapon = playerWeaponController.GetActiveWeapon();
-        
-        if (currentWeapon != null) // ✅ SI TIENE ARMA
-        {
-            // Mostrar todo
-            if (weaponNameText != null)
-            {
-                weaponNameText.gameObject.SetActive(true);
-                weaponNameText.text = currentWeapon.GetWeaponName();
-            }
+        Weapon currentWeapon = GetActiveWeapon();
 
-            if (weaponIcon != null)
+        if (currentWeapon != null)
+        {
+            if (activeWeaponIcon != null)
             {
-                weaponIcon.gameObject.SetActive(true);
+                activeWeaponIcon.gameObject.SetActive(true);
                 if (currentWeapon.weaponData != null && currentWeapon.weaponData.weaponIcon != null)
                 {
-                    weaponIcon.sprite = currentWeapon.weaponData.weaponIcon;
+                    activeWeaponIcon.sprite = currentWeapon.weaponData.weaponIcon;
                 }
             }
 
-            if (ammoText != null)
-            {
-                ammoText.gameObject.SetActive(true);
-                int currentAmmo = currentWeapon.GetCurrentAmmo();
-                int totalAmmo = currentWeapon.GetTotalAmmo();
-                ammoText.text = currentAmmo + " / " + totalAmmo;
-            }
+            Weapon secondaryWeapon = GetInactiveWeapon();
 
-            // Arma GUARDADA
-            int activeSlot = playerWeaponController.GetActiveSlotIndex();
-            int inactiveSlot = 1 - activeSlot;
-            Weapon secondaryWeapon = playerWeaponController.GetWeaponInSlot(inactiveSlot);
-
-            if (secondaryWeaponIcon != null)
+            if (unActiveWeaponIcon != null)
             {
                 if (secondaryWeapon != null && secondaryWeapon.weaponData != null)
                 {
                     if (secondaryWeapon.weaponData.weaponIcon != null)
                     {
-                        secondaryWeaponIcon.sprite = secondaryWeapon.weaponData.weaponIcon;
-                        secondaryWeaponIcon.gameObject.SetActive(true);
+                        unActiveWeaponIcon.sprite = secondaryWeapon.weaponData.weaponIcon;
+                        unActiveWeaponIcon.gameObject.SetActive(true);
                     }
                 }
                 else
                 {
-                    secondaryWeaponIcon.gameObject.SetActive(false);
+                    unActiveWeaponIcon.gameObject.SetActive(false);
                 }
             }
         }
-        else // ✅ SIN ARMA
+        else
         {
-            // Ocultar todo
-            if (weaponNameText != null)
-                weaponNameText.gameObject.SetActive(false);
+            if (activeWeaponIcon != null)
+                activeWeaponIcon.gameObject.SetActive(false);
 
-            if (weaponIcon != null)
-                weaponIcon.gameObject.SetActive(false);
-
-            if (ammoText != null)
-                ammoText.gameObject.SetActive(false);
-
-            if (secondaryWeaponIcon != null)
-                secondaryWeaponIcon.gameObject.SetActive(false);
+            if (unActiveWeaponIcon != null)
+                unActiveWeaponIcon.gameObject.SetActive(false);
         }
     }
-}
 
+    private Weapon GetActiveWeapon()
+    {
+        if (WeaponManager.instance == null)
+            return null;
 
+        Transform activeSlot = WeaponManager.instance.GetActiveSlot();
+        
+        if (activeSlot != null && activeSlot.childCount > 0)
+        {
+            return activeSlot.GetChild(0).GetComponent<Weapon>();
+        }
 
-    // ===== PUNTUACIÓN =====
+        return null;
+    }
+
+    private Weapon GetInactiveWeapon()
+    {
+        if (WeaponManager.instance == null)
+            return null;
+
+        Transform activeSlot = WeaponManager.instance.GetActiveSlot();
+        Transform[] allSlots = WeaponManager.instance.GetAllSlots();
+
+        if (allSlots != null)
+        {
+            foreach (Transform slot in allSlots)
+            {
+                if (slot != activeSlot && slot.childCount > 0)
+                {
+                    return slot.GetChild(0).GetComponent<Weapon>();
+                }
+            }
+        }
+
+        return null;
+    }
 
     public void AddScore(int points)
     {
@@ -180,19 +202,14 @@ void UpdateWeaponDisplay()
         }
     }
 
-    // ===== MÉTODOS DE MIRA =====
-
     private void CreateCrosshair()
     {
-        // Crear GameObject para la mira
         GameObject crosshairObj = new GameObject("CrosshairImage");
-        crosshairObj.transform.SetParent(transform); // Hijo del Canvas
+        crosshairObj.transform.SetParent(transform);
         crosshairObj.transform.localPosition = Vector3.zero;
 
-        // Agregar Image
         crosshairImage = crosshairObj.AddComponent<Image>();
 
-        // Asignar sprite
         if (crosshairSprite != null)
         {
             crosshairImage.sprite = crosshairSprite;
@@ -204,10 +221,9 @@ void UpdateWeaponDisplay()
 
         crosshairImage.preserveAspect = true;
 
-        // Configurar RectTransform
         crosshairRect = crosshairObj.GetComponent<RectTransform>();
-        crosshairRect.anchorMin = new Vector2(0.5f, 0.5f); // Centro
-        crosshairRect.anchorMax = new Vector2(0.5f, 0.5f); // Centro
+        crosshairRect.anchorMin = new Vector2(0.5f, 0.5f);
+        crosshairRect.anchorMax = new Vector2(0.5f, 0.5f);
         crosshairRect.pivot = new Vector2(0.5f, 0.5f);
         crosshairRect.anchoredPosition = Vector2.zero;
         crosshairRect.sizeDelta = new Vector2(normalSize, normalSize);
@@ -215,34 +231,29 @@ void UpdateWeaponDisplay()
         Debug.Log("Mira creada en GameUI");
     }
 
-private void UpdateCrosshair()
-{
-    if (crosshairImage == null)
-        return;
-
-    // ✅ Verificar si tiene arma equipada
-    PlayerWeaponController playerWeaponController = FindObjectOfType<PlayerWeaponController>();
-    Weapon currentWeapon = playerWeaponController != null ? playerWeaponController.GetActiveWeapon() : null;
-
-    if (currentWeapon != null)
+    private void UpdateCrosshair()
     {
-        // ✅ Mostrar mira si tiene arma
-        crosshairImage.gameObject.SetActive(true);
-        UpdateCrosshairColor();
-        UpdateCrosshairSize();
+        if (crosshairImage == null)
+            return;
+
+        Weapon currentWeapon = GetActiveWeapon();
+
+        if (currentWeapon != null)
+        {
+            crosshairImage.gameObject.SetActive(true);
+            UpdateCrosshairColor();
+            UpdateCrosshairSize();
+        }
+        else
+        {
+            crosshairImage.gameObject.SetActive(false);
+        }
     }
-    else
-    {
-        // ✅ Ocultar mira si NO tiene arma
-        crosshairImage.gameObject.SetActive(false);
-    }
-}
 
     private void UpdateCrosshairColor()
     {
         Color displayColor = normalColor;
 
-        // Si fue hit recientemente, cambiar a rojo
         if (Time.time - lastHitTime < hitDuration)
         {
             float t = (Time.time - lastHitTime) / hitDuration;
@@ -256,7 +267,6 @@ private void UpdateCrosshair()
     {
         float currentSize = normalSize;
 
-        // Si disparó recientemente, expandir
         if (Time.time - lastShotTime < expandDuration)
         {
             float t = (Time.time - lastShotTime) / expandDuration;
