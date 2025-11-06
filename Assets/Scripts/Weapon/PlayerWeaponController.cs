@@ -11,8 +11,7 @@ public class PlayerWeaponController : MonoBehaviour
     public LayerMask pickupLayer;
 
     [Header("Drop Settings")]
-    public float dropDistance = 2f; // Distancia frente al jugador donde se tira el arma
-    public float dropForce = 5f; // Fuerza con la que se lanza el arma
+    public float dropForce = 10f; // Fuerza con la que se lanza el arma
 
     private WeaponPickup currentTargetPickup;
     private WeaponPickup previousTargetPickup;
@@ -22,7 +21,7 @@ public class PlayerWeaponController : MonoBehaviour
         HandleWeaponSwitching();
         HandleWeaponActions();
         HandlePickupDetection();
-        HandleWeaponDrop(); // ← NUEVO
+        HandleWeaponDrop();
     }
 
     void HandleWeaponSwitching()
@@ -53,7 +52,6 @@ public class PlayerWeaponController : MonoBehaviour
         }
     }
 
-    // ═══ NUEVO: Sistema de tirar armas ═══
     void HandleWeaponDrop()
     {
         if (Input.GetKeyDown(KeyCode.Q))
@@ -62,42 +60,30 @@ public class PlayerWeaponController : MonoBehaviour
 
             if (activeSlot == -1 || weaponInventory.GetActiveWeapon() == null)
             {
-                Debug.Log("[PlayerWeaponController] No hay arma equipada para tirar");
                 return;
             }
 
             Weapon activeWeapon = weaponInventory.GetActiveWeapon();
             if (activeWeapon.IsReloading())
             {
-                Debug.Log("[PlayerWeaponController] No puedes tirar el arma mientras recargas");
                 return;
             }
 
-            // Dirección exacta de la cámara
+            // Centro de la cámara (donde está la mira)
+            Vector3 cameraCenter = playerCamera.transform.position;
             Vector3 cameraForward = playerCamera.transform.forward;
 
-            // Posición inicial: frente a la cámara
-            Vector3 dropPosition = playerCamera.transform.position + cameraForward * 1f;
+            // Spawn adelante del centro (para que no esté dentro de la cámara)
+            Vector3 throwPosition = cameraCenter + cameraForward * 0.7f;
 
-            // Tirar el arma
-            GameObject droppedWeapon = weaponInventory.DropWeapon(activeSlot, dropPosition);
+            // Velocidad de lanzamiento hacia donde miras
+            Vector3 throwVelocity = cameraForward * dropForce;
 
-            if (droppedWeapon != null)
-            {
-                Rigidbody rb = droppedWeapon.GetComponent<Rigidbody>();
-                if (rb != null)
-                {
-                    // Tirar hacia donde apunta la cámara
-                    rb.AddForce(cameraForward * dropForce, ForceMode.VelocityChange);
-
-                    // Rotación visual
-                    rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.VelocityChange);
-                }
-
-                Debug.Log($"[PlayerWeaponController] Arma tirada hacia {cameraForward}");
-            }
+            // Lanzar
+            GameObject thrownWeapon = weaponInventory.ThrowWeapon(activeSlot, throwPosition, throwVelocity);
         }
     }
+
 
 
     void HandlePickupDetection()
