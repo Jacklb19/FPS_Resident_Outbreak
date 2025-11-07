@@ -11,7 +11,7 @@ public class PlayerWeaponController : MonoBehaviour
     public LayerMask pickupLayer;
 
     [Header("Drop Settings")]
-    public float dropForce = 10f; // Fuerza con la que se lanza el arma
+    public float dropForce = 10f;
 
     private WeaponPickup currentTargetPickup;
     private WeaponPickup previousTargetPickup;
@@ -69,22 +69,14 @@ public class PlayerWeaponController : MonoBehaviour
                 return;
             }
 
-            // Centro de la cámara (donde está la mira)
             Vector3 cameraCenter = playerCamera.transform.position;
             Vector3 cameraForward = playerCamera.transform.forward;
-
-            // Spawn adelante del centro (para que no esté dentro de la cámara)
             Vector3 throwPosition = cameraCenter + cameraForward * 0.7f;
-
-            // Velocidad de lanzamiento hacia donde miras
             Vector3 throwVelocity = cameraForward * dropForce;
 
-            // Lanzar
-            GameObject thrownWeapon = weaponInventory.ThrowWeapon(activeSlot, throwPosition, throwVelocity);
+            weaponInventory.ThrowWeapon(activeSlot, throwPosition, throwVelocity);
         }
     }
-
-
 
     void HandlePickupDetection()
     {

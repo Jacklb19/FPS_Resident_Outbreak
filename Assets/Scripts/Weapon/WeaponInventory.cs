@@ -10,7 +10,7 @@ public class WeaponInventory : MonoBehaviour
     public LayerMask groundLayer;
 
     private Weapon[] weapons = new Weapon[2];
-    private int activeSlotIndex = -1; // -1 = sin arma, 0 = slot1, 1 = slot2
+    private int activeSlotIndex = -1;
 
     public void EquipWeapon(GameObject weaponPrefab, WeaponInstance weaponInstance, int slotIndex)
     {
@@ -52,49 +52,45 @@ public class WeaponInventory : MonoBehaviour
 
         weaponObj.SetActive(false);
 
-        if (activeSlotIndex == -1)
+        if (activeSlotIndex == slotIndex)
+        {
+            int temp = activeSlotIndex;
+            activeSlotIndex = -1;
+            SwitchToSlot(temp);
+        }
+        else if (activeSlotIndex == -1)
         {
             SwitchToSlot(slotIndex);
         }
     }
 
-    // ═══ MODIFICADO: Ahora permite cambiar a slots vacíos ═══
     public void SwitchToSlot(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex > 1) return;
 
-        // ═══ NUEVO: Si intentas cambiar al slot activo actual, no hacer nada ═══
-        if (activeSlotIndex == slotIndex) return;
+        if (activeSlotIndex == slotIndex)
+        {
+            if (weapons[slotIndex] != null && !weapons[slotIndex].gameObject.activeSelf)
+            {
+                weapons[slotIndex].gameObject.SetActive(true);
+                weapons[slotIndex].OnEquip();
+            }
+            return;
+        }
 
-        // ═══ NUEVO: Desequipar arma actual (si existe) ═══
         if (activeSlotIndex != -1 && weapons[activeSlotIndex] != null)
         {
             weapons[activeSlotIndex].OnUnequip();
             weapons[activeSlotIndex].gameObject.SetActive(false);
         }
 
-        // ═══ NUEVO: Cambiar al nuevo slot ═══
         activeSlotIndex = slotIndex;
 
-        // ═══ NUEVO: Si el nuevo slot tiene arma, equiparla ═══
         if (weapons[activeSlotIndex] != null)
         {
             weapons[activeSlotIndex].gameObject.SetActive(true);
             weapons[activeSlotIndex].OnEquip();
         }
-        // ═══ Si no tiene arma, simplemente quedas con "manos vacías" ═══
-    }
-
-    // ═══ NUEVO: Método para desequipar completamente ═══
-    public void UnequipAll()
-    {
-        if (activeSlotIndex != -1 && weapons[activeSlotIndex] != null)
-        {
-            weapons[activeSlotIndex].OnUnequip();
-            weapons[activeSlotIndex].gameObject.SetActive(false);
-        }
-
-        activeSlotIndex = -1; // Manos vacías
     }
 
     public GameObject DropWeapon(int slotIndex, Vector3 dropPosition)
@@ -158,6 +154,7 @@ public class WeaponInventory : MonoBehaviour
 
         return droppedWeapon;
     }
+
     public GameObject ThrowWeapon(int slotIndex, Vector3 throwPosition, Vector3 throwVelocity)
     {
         if (slotIndex < 0 || slotIndex > 1) return null;
@@ -169,13 +166,10 @@ public class WeaponInventory : MonoBehaviour
 
         weapon.OnUnequip();
 
-        // ═══ NUEVO: Ajustar throwPosition según el pivot del arma ═══
         Vector3 adjustedThrowPosition = AdjustThrowPosition(throwPosition, weaponData);
 
-        // Crear en la posición ajustada
         GameObject thrownWeapon = Instantiate(weaponData.modelPrefab, adjustedThrowPosition, Quaternion.identity);
 
-        // Activar física
         Rigidbody rb = thrownWeapon.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -225,10 +219,8 @@ public class WeaponInventory : MonoBehaviour
         return thrownWeapon;
     }
 
-    // ═══ NUEVO: Método para ajustar la posición de throw según el pivot del arma ═══
     private Vector3 AdjustThrowPosition(Vector3 basePosition, WeaponData weaponData)
     {
-        // Crear arma temporalmente para medir su pivot/bounds
         GameObject tempWeapon = Instantiate(weaponData.modelPrefab, Vector3.zero, Quaternion.identity);
         tempWeapon.name = "TempWeapon_ThrowAdjust";
 
@@ -239,30 +231,19 @@ public class WeaponInventory : MonoBehaviour
         {
             weaponCollider.enabled = true;
             Bounds bounds = weaponCollider.bounds;
-
-            // Calcular la diferencia entre el pivot (position) y el centro del collider
             Vector3 pivotToCenter = bounds.center - tempWeapon.transform.position;
-
-            // Invertir el offset para que el centro quede en basePosition
             offset = -pivotToCenter;
-
-            Debug.Log($"[WeaponInventory] {weaponData.weaponName} - Pivot offset: {pivotToCenter}, Applied: {offset}");
         }
 
         Destroy(tempWeapon);
-
         return basePosition + offset;
     }
-
-
 
     private Vector3 CalculateGroundPosition(Vector3 dropPosition, WeaponData weaponData)
     {
         float weaponHeight = GetWeaponHeight(weaponData);
-
         Vector3 rayStart = dropPosition + Vector3.up * 3f;
         RaycastHit groundHit;
-
         LayerMask layerToUse = groundLayer.value != 0 ? groundLayer : ~0;
 
         if (Physics.Raycast(rayStart, Vector3.down, out groundHit, 10f, layerToUse))
@@ -287,9 +268,7 @@ public class WeaponInventory : MonoBehaviour
         foreach (Collider col in colliders)
         {
             if (col.isTrigger) continue;
-
             float topPoint = col.bounds.max.y;
-
             if (topPoint < dropPosition.y && topPoint < lowestPoint)
             {
                 lowestPoint = topPoint;
@@ -316,7 +295,6 @@ public class WeaponInventory : MonoBehaviour
         if (weaponCollider != null)
         {
             weaponCollider.enabled = true;
-
             Bounds bounds = weaponCollider.bounds;
             float pivotToBottom = Mathf.Abs(tempWeapon.transform.position.y - bounds.min.y);
 
@@ -331,7 +309,6 @@ public class WeaponInventory : MonoBehaviour
         }
 
         Destroy(tempWeapon);
-
         return height;
     }
 
@@ -366,7 +343,6 @@ public class WeaponInventory : MonoBehaviour
 
     public int GetActiveSlotIndex() => activeSlotIndex;
 
-    // ═══ NUEVO: Verificar si hay arma activa ═══
     public bool HasWeaponEquipped()
     {
         return activeSlotIndex != -1 && weapons[activeSlotIndex] != null;

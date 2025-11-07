@@ -8,12 +8,11 @@ public class Weapon : MonoBehaviour
     
     private float nextShotTime = 0f;
     private bool isReloading = false;
-    
     private float lastEmptyClickTime = 0f;
     private float emptyClickCooldown = 0.3f;
     
     private AudioSource audioSource;
-    private Animator weaponAnimator; // ← NUEVO
+    private Animator weaponAnimator;
     
     private static readonly int ShootTrigger = Animator.StringToHash("Shoot");
     private static readonly int ReloadTrigger = Animator.StringToHash("Reload");
@@ -27,7 +26,6 @@ public class Weapon : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
         
-        // ← NUEVO
         weaponAnimator = GetComponentInChildren<Animator>();
         if (weaponAnimator != null)
         {
@@ -41,9 +39,14 @@ public class Weapon : MonoBehaviour
         weaponData = instance.weaponData;
     }
     
-    // ← NUEVO
     public void OnEquip()
     {
+        if (weaponData != null)
+        {
+            transform.localPosition = weaponData.spawnPosition;
+            transform.localRotation = Quaternion.Euler(weaponData.spawnRotation);
+        }
+        
         if (weaponAnimator != null)
         {
             weaponAnimator.enabled = true;
@@ -52,7 +55,6 @@ public class Weapon : MonoBehaviour
         }
     }
     
-    // ← NUEVO
     public void OnUnequip()
     {
         if (weaponAnimator != null)
@@ -91,7 +93,6 @@ public class Weapon : MonoBehaviour
     
     private void PerformShot()
     {
-        // ← NUEVO
         if (weaponAnimator != null && weaponAnimator.enabled)
         {
             weaponAnimator.SetTrigger(ShootTrigger);
@@ -135,8 +136,6 @@ public class Weapon : MonoBehaviour
                     if (gameUI != null)
                         gameUI.OnCrosshairHit();
                 }
-                
-                Debug.DrawLine(ray.origin, hit.point, Color.red, 0.5f);
             }
         }
         
@@ -157,7 +156,6 @@ public class Weapon : MonoBehaviour
     {
         isReloading = true;
         
-        // ← NUEVO
         if (weaponAnimator != null && weaponAnimator.enabled)
         {
             weaponAnimator.SetTrigger(ReloadTrigger);
@@ -171,7 +169,6 @@ public class Weapon : MonoBehaviour
         weaponInstance.Reload();
         isReloading = false;
         
-        // ← NUEVO
         if (weaponAnimator != null && weaponAnimator.enabled)
         {
             weaponAnimator.SetBool(IsReloadingBool, false);
@@ -189,6 +186,5 @@ public class Weapon : MonoBehaviour
     public int GetCurrentAmmo() => weaponInstance.currentMagazineAmmo;
     public int GetTotalAmmo() => weaponInstance.totalReserveAmmo;
     public bool IsReloading() => isReloading;
-    
     public WeaponInstance GetWeaponInstance() => weaponInstance;
 }
