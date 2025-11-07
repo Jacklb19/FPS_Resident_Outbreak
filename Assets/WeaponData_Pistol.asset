@@ -16,7 +16,8 @@ MonoBehaviour:
   weaponID: weapon_001
   shootingDelay: 0.4
   bulletsPerShot: 1
-  spread: 0
+  hipSpread: 0.04
+  adsSpread: 0.01
   damage: 25
   magazineSize: 7
   reloadTime: 2
