@@ -25,7 +25,7 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 2039
-  modelPrefab: {fileID: 3125563116616515477, guid: 7c1838d1d75aa17409b6caeda1808029, type: 3}
+  modelPrefab: {fileID: 4089052210891491727, guid: 834923cd42177c9448de8e6626f015aa, type: 3}
   impactPrefab: {fileID: 100002, guid: ba261927bb2ae4244b20b0eb77a96415, type: 3}
   spawnPosition: {x: 0.2, y: -0.25, z: 0.9}
   spawnRotation: {x: 0, y: -180, z: 0}

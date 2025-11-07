@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 6551456013708673923}
   - component: {fileID: 6551456013708673935}
   - component: {fileID: 1067932381355180446}
+  - component: {fileID: 8501020522645586}
   m_Layer: 11
   m_Name: M16_Prefab 1
   m_TagString: Untagged
@@ -142,6 +143,27 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!95 &8501020522645586
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8476780526004645078}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: fecca405c0820a245b5e432505e4ed3d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &6265787758613469138
 PrefabInstance:
   m_ObjectHideFlags: 0
