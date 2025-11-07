@@ -41,16 +41,30 @@ public class PlayerWeaponController : MonoBehaviour
         Weapon activeWeapon = weaponInventory.GetActiveWeapon();
         if (activeWeapon == null) return;
 
+        // Disparo con botón izquierdo
         if (Input.GetMouseButton(0))
         {
             activeWeapon.TryShoot();
         }
 
+        // Recarga con R
         if (Input.GetKeyDown(KeyCode.R))
         {
             activeWeapon.StartReload();
         }
+
+        // ═══ ADS CON BOTÓN DERECHO DEL MOUSE ═══
+        if (Input.GetMouseButtonDown(1)) // Presionar botón derecho
+        {
+            activeWeapon.EnterAds();
+        }
+        else if (Input.GetMouseButtonUp(1)) // Soltar botón derecho
+        {
+            activeWeapon.ExitAds();
+        }
     }
+
+
 
     void HandleWeaponDrop()
     {

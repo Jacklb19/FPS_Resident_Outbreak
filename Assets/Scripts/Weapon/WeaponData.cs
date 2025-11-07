@@ -10,7 +10,9 @@ public class WeaponData : ScriptableObject
     [Header("Firing Settings")]
     public float shootingDelay = 0.1f;
     public int bulletsPerShot = 1;
-    public float spread = 0.1f;
+    [Header("Spread")]
+public float hipSpread = 0.4f;   
+public float adsSpread = 0.04f; 
     public int damage = 25;
     
     [Header("Magazine Settings")]

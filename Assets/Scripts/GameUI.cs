@@ -121,11 +121,11 @@ public class GameUI : MonoBehaviour
     void UpdateWeaponDisplay()
     {
         PlayerWeaponController playerWeaponController = FindObjectOfType<PlayerWeaponController>();
-        
+
         if (playerWeaponController != null)
         {
             Weapon currentWeapon = playerWeaponController.GetActiveWeapon();
-            
+
             if (currentWeapon != null)
             {
                 if (activeWeaponIcon != null)
@@ -253,15 +253,35 @@ public class GameUI : MonoBehaviour
 
         if (currentWeapon != null)
         {
-            crosshairImage.gameObject.SetActive(true);
+            // Si está en ADS, ocultar la mira y salir
+            if (currentWeapon.IsAds())
+            {
+                if (crosshairImage.gameObject.activeSelf)
+                {
+                    crosshairImage.gameObject.SetActive(false);
+                }
+                return;
+            }
+
+            // Si NO está en ADS, mostrar la mira
+            if (!crosshairImage.gameObject.activeSelf)
+            {
+                crosshairImage.gameObject.SetActive(true);
+            }
+
             UpdateCrosshairColor();
             UpdateCrosshairSize();
         }
         else
         {
-            crosshairImage.gameObject.SetActive(false);
+            // No hay arma equipada, ocultar mira
+            if (crosshairImage.gameObject.activeSelf)
+            {
+                crosshairImage.gameObject.SetActive(false);
+            }
         }
     }
+
 
     private void UpdateCrosshairColor()
     {
@@ -297,5 +317,18 @@ public class GameUI : MonoBehaviour
     public void OnCrosshairHit()
     {
         lastHitTime = Time.time;
+    }
+
+    public void SetCrosshairVisible(bool visible)
+    {
+        if (crosshairImage != null)
+        {
+            crosshairImage.gameObject.SetActive(visible);
+        }
+    }
+
+    public bool IsCrosshairVisible()
+    {
+        return crosshairImage != null && crosshairImage.gameObject.activeSelf;
     }
 }
