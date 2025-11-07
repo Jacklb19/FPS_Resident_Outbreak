@@ -15,6 +15,9 @@ public class PlayerWeaponController : MonoBehaviour
 
     private WeaponPickup currentTargetPickup;
     private WeaponPickup previousTargetPickup;
+    
+    private AmmoPickup currentTargetAmmo;
+    private AmmoPickup previousTargetAmmo;
 
     void Update()
     {
@@ -41,30 +44,25 @@ public class PlayerWeaponController : MonoBehaviour
         Weapon activeWeapon = weaponInventory.GetActiveWeapon();
         if (activeWeapon == null) return;
 
-        // Disparo con botón izquierdo
         if (Input.GetMouseButton(0))
         {
             activeWeapon.TryShoot();
         }
 
-        // Recarga con R
         if (Input.GetKeyDown(KeyCode.R))
         {
             activeWeapon.StartReload();
         }
 
-        // ═══ ADS CON BOTÓN DERECHO DEL MOUSE ═══
-        if (Input.GetMouseButtonDown(1)) // Presionar botón derecho
+        if (Input.GetMouseButtonDown(1))
         {
             activeWeapon.EnterAds();
         }
-        else if (Input.GetMouseButtonUp(1)) // Soltar botón derecho
+        else if (Input.GetMouseButtonUp(1))
         {
             activeWeapon.ExitAds();
         }
     }
-
-
 
     void HandleWeaponDrop()
     {
@@ -98,23 +96,59 @@ public class PlayerWeaponController : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, pickupLayer))
         {
-            WeaponPickup pickup = hit.collider.GetComponent<WeaponPickup>();
-
-            if (pickup != null)
+            AmmoPickup ammoPickup = hit.collider.GetComponent<AmmoPickup>();
+            
+            if (ammoPickup != null && ammoPickup.IsAvailable())
             {
-                currentTargetPickup = pickup;
+                currentTargetAmmo = ammoPickup;
+                
+                if (previousTargetAmmo != null && previousTargetAmmo != currentTargetAmmo)
+                {
+                    previousTargetAmmo.ShowOutline(false);
+                }
+                
+                if (previousTargetPickup != null)
+                {
+                    previousTargetPickup.ShowOutline(false);
+                    previousTargetPickup = null;
+                }
+                
+                currentTargetAmmo.ShowOutline(true);
+                previousTargetAmmo = currentTargetAmmo;
+                currentTargetPickup = null;
+                
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    PickupAmmo(ammoPickup);
+                }
+                
+                return;
+            }
+            
+            WeaponPickup weaponPickup = hit.collider.GetComponent<WeaponPickup>();
 
+            if (weaponPickup != null)
+            {
+                currentTargetPickup = weaponPickup;
+                
                 if (previousTargetPickup != null && previousTargetPickup != currentTargetPickup)
                 {
                     previousTargetPickup.ShowOutline(false);
                 }
+                
+                if (previousTargetAmmo != null)
+                {
+                    previousTargetAmmo.ShowOutline(false);
+                    previousTargetAmmo = null;
+                }
 
                 currentTargetPickup.ShowOutline(true);
                 previousTargetPickup = currentTargetPickup;
+                currentTargetAmmo = null;
 
                 if (Input.GetKeyDown(KeyCode.F))
                 {
-                    PickupWeapon(pickup);
+                    PickupWeapon(weaponPickup);
                 }
 
                 return;
@@ -126,8 +160,29 @@ public class PlayerWeaponController : MonoBehaviour
             previousTargetPickup.ShowOutline(false);
             previousTargetPickup = null;
         }
+        
+        if (previousTargetAmmo != null)
+        {
+            previousTargetAmmo.ShowOutline(false);
+            previousTargetAmmo = null;
+        }
 
         currentTargetPickup = null;
+        currentTargetAmmo = null;
+    }
+    
+    // ═══ CAMBIADO: Usa AmmoInventory directamente ═══
+    void PickupAmmo(AmmoPickup ammoPickup)
+    {
+        AmmoInventory ammoInventory = weaponInventory.GetAmmoInventory();
+        
+        if (ammoPickup.TryPickup(ammoInventory, out int ammoAdded))
+        {
+            Debug.Log($"¡Recogiste {ammoAdded} balas de {ammoPickup.GetTargetWeaponData().weaponName}!");
+            
+            previousTargetAmmo = null;
+            currentTargetAmmo = null;
+        }
     }
 
     void PickupWeapon(WeaponPickup pickup)
