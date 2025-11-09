@@ -7,25 +7,26 @@ public class Zombie : MonoBehaviour
     public int attackDamage = 10;
     public float attackRange = 2f;
     public float attackCooldown = 2f;
-    
+
     [Header("Movimiento")]
     public float pursuitSpeed = 5.5f;
-    
+
     private float lastAttackTime = 0f;
     private Transform target;
     private Animator animator;
     private NavMeshAgent navAgent;
     private ZombieHealth zombieHealth;
     private bool isAttacking = false;
+    private bool isDead = false;
 
     void Start()
     {
         animator = GetComponent<Animator>();
         navAgent = GetComponent<NavMeshAgent>();
         zombieHealth = GetComponent<ZombieHealth>();
-        
+
         navAgent.speed = pursuitSpeed;
-        
+
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
@@ -35,6 +36,8 @@ public class Zombie : MonoBehaviour
 
     void Update()
     {
+        if (isDead) return;
+
         if (target == null)
         {
             animator.SetBool("isWalking", false);
@@ -43,31 +46,26 @@ public class Zombie : MonoBehaviour
 
         if (zombieHealth == null || zombieHealth.CurrentHealth <= 0)
         {
-            animator.SetBool("isWalking", false);
-            navAgent.isStopped = true;
+            Die();
             return;
         }
 
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        // Si está en rango de ataque
         if (distanceToTarget <= attackRange)
         {
             navAgent.isStopped = true;
             animator.SetBool("isWalking", false);
-            
-            // Rotar hacia el objetivo
+
             Vector3 direction = (target.position - transform.position).normalized;
             Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
             transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
 
-            // Atacar si ha pasado el cooldown
             if (Time.time >= lastAttackTime + attackCooldown && !isAttacking)
             {
                 StartCoroutine(PerformAttack());
             }
         }
-        // Si está fuera de rango, perseguir
         else
         {
             navAgent.isStopped = false;
@@ -76,13 +74,44 @@ public class Zombie : MonoBehaviour
         }
     }
 
+    // ✅ Recibir daño
+    public void TakeDamage(int amount)
+    {
+        if (isDead) return;
+
+        zombieHealth.TakeDamage(amount); // ✅ LLAMAS A ZombieHealth
+
+        animator.SetTrigger("DAMAGE");
+
+        if (zombieHealth.CurrentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    // ✅ Muerte
+    void Die()
+    {
+        isDead = true;
+        navAgent.isStopped = true;
+
+        animator.SetBool("isWalking", false);
+        animator.SetTrigger("DIE");
+
+        Collider col = GetComponent<Collider>();
+        if (col) col.enabled = false;
+
+        Destroy(gameObject, 5f);
+    }
+
     System.Collections.IEnumerator PerformAttack()
     {
         isAttacking = true;
+
         animator.SetTrigger("DAMAGE");
-        
+
         yield return new WaitForSeconds(0.5f);
-        
+
         if (target != null && Vector3.Distance(transform.position, target.position) <= attackRange)
         {
             PlayerHealth playerHealth = target.GetComponent<PlayerHealth>();
@@ -93,7 +122,7 @@ public class Zombie : MonoBehaviour
         }
 
         lastAttackTime = Time.time;
-        
+
         yield return new WaitForSeconds(1f);
         isAttacking = false;
     }
