@@ -5,15 +5,14 @@ public class WeaponInstance
 {
     public WeaponData weaponData;
     public int currentMagazineAmmo;
-    public int totalReserveAmmo;
     
-    public WeaponInstance(WeaponData data, int startingAmmo = -1)
+    // ═══ CAMBIADO: Ya no almacenamos munición aquí ═══
+    // La munición de reserva ahora está en AmmoInventory
+    
+    public WeaponInstance(WeaponData data)
     {
         weaponData = data;
         currentMagazineAmmo = data.magazineSize;
-        
-        // Si no se especifica, usa 3 cargadores de reserva
-        totalReserveAmmo = startingAmmo >= 0 ? startingAmmo : data.magazineSize * 3;
     }
     
     public bool CanShoot()
@@ -21,22 +20,35 @@ public class WeaponInstance
         return currentMagazineAmmo > 0;
     }
     
-    public bool CanReload()
+    // ═══ CAMBIADO: Ahora requiere AmmoInventory ═══
+    public bool CanReload(AmmoInventory ammoInventory)
     {
-        return currentMagazineAmmo < weaponData.magazineSize && totalReserveAmmo > 0;
+        if (ammoInventory == null) return false;
+        
+        int reserveAmmo = ammoInventory.GetAmmo(weaponData.weaponID);
+        return currentMagazineAmmo < weaponData.magazineSize && reserveAmmo > 0;
     }
     
-    public void Reload()
+    // ═══ CAMBIADO: Ahora consume del inventario centralizado ═══
+    public void Reload(AmmoInventory ammoInventory)
     {
-        int ammoNeeded = weaponData.magazineSize - currentMagazineAmmo;
-        int ammoToReload = Mathf.Min(ammoNeeded, totalReserveAmmo);
+        if (ammoInventory == null) return;
         
-        currentMagazineAmmo += ammoToReload;
-        totalReserveAmmo -= ammoToReload;
+        int ammoNeeded = weaponData.magazineSize - currentMagazineAmmo;
+        int ammoConsumed = ammoInventory.ConsumeAmmo(weaponData, ammoNeeded);
+        
+        currentMagazineAmmo += ammoConsumed;
     }
     
     public void ConsumeAmmo()
     {
         currentMagazineAmmo = Mathf.Max(0, currentMagazineAmmo - 1);
+    }
+    
+    // ═══ NUEVO: Obtener munición de reserva desde el inventario ═══
+    public int GetReserveAmmo(AmmoInventory ammoInventory)
+    {
+        if (ammoInventory == null) return 0;
+        return ammoInventory.GetAmmo(weaponData.weaponID);
     }
 }

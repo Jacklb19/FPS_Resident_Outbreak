@@ -6,16 +6,18 @@ public class Weapon : MonoBehaviour
     public WeaponData weaponData;
     private WeaponInstance weaponInstance;
     
+    // ═══ NUEVO: Referencia al inventario de munición ═══
+    private AmmoInventory ammoInventory;
+    
     private float nextShotTime = 0f;
     private bool isReloading = false;
-    private bool isAds = false; // ← NUEVO: tracking de ADS
+    private bool isAds = false;
     private float lastEmptyClickTime = 0f;
     private float emptyClickCooldown = 0.3f;
     
     private AudioSource audioSource;
     private Animator weaponAnimator;
     
-    // Parámetros del Animator
     private static readonly int ShootTrigger = Animator.StringToHash("Shoot");
     private static readonly int ReloadTrigger = Animator.StringToHash("Reload");
     private static readonly int IsReloadingBool = Animator.StringToHash("IsReloading");
@@ -38,10 +40,18 @@ public class Weapon : MonoBehaviour
         }
     }
     
-    public void Initialize(WeaponInstance instance)
+    // ═══ CAMBIADO: Ahora requiere AmmoInventory ═══
+    public void Initialize(WeaponInstance instance, AmmoInventory inventory)
     {
         weaponInstance = instance;
         weaponData = instance.weaponData;
+        ammoInventory = inventory;
+        
+        // Asegurar que la munición esté inicializada en el inventario
+        if (ammoInventory != null)
+        {
+            ammoInventory.InitializeAmmo(weaponData);
+        }
     }
     
     public void OnEquip()
@@ -59,10 +69,8 @@ public class Weapon : MonoBehaviour
             weaponAnimator.Update(0f);
         }
         
-        // Resetear ADS al equipar
         isAds = false;
         
-        // Asegurar que el crosshair esté visible al equipar
         GameUI gameUI = FindObjectOfType<GameUI>();
         if (gameUI != null)
         {
@@ -83,7 +91,6 @@ public class Weapon : MonoBehaviour
             isReloading = false;
         }
         
-        // Resetear ADS al desequipar
         isAds = false;
     }
     
@@ -111,7 +118,6 @@ public class Weapon : MonoBehaviour
     
     private void PerformShot()
     {
-        // Disparar animación según el modo (ADS o Hipfire)
         if (weaponAnimator != null && weaponAnimator.enabled)
         {
             if (isAds)
@@ -129,7 +135,6 @@ public class Weapon : MonoBehaviour
         Camera mainCam = Camera.main;
         if (mainCam == null) return;
         
-        // ═══ USAR SPREAD SEGÚN MODO ═══
         float currentSpread = isAds ? weaponData.adsSpread : weaponData.hipSpread;
         
         for (int i = 0; i < weaponData.bulletsPerShot; i++)
@@ -175,7 +180,8 @@ public class Weapon : MonoBehaviour
     
     public void StartReload()
     {
-        if (!weaponInstance.CanReload() || isReloading)
+        // ═══ CAMBIADO: Usa el AmmoInventory ═══
+        if (!weaponInstance.CanReload(ammoInventory) || isReloading)
             return;
         
         StartCoroutine(ReloadCoroutine());
@@ -195,7 +201,8 @@ public class Weapon : MonoBehaviour
         
         yield return new WaitForSeconds(weaponData.reloadTime);
         
-        weaponInstance.Reload();
+        // ═══ CAMBIADO: Usa el AmmoInventory ═══
+        weaponInstance.Reload(ammoInventory);
         isReloading = false;
         
         if (weaponAnimator != null && weaponAnimator.enabled)
@@ -204,23 +211,17 @@ public class Weapon : MonoBehaviour
         }
     }
     
-    // ═══════════════════════════════════════════════
-    // ═══ MÉTODOS PARA ADS (AIM DOWN SIGHTS) ═══
-    // ═══════════════════════════════════════════════
-    
     public void EnterAds()
     {
         if (isReloading) return;
         
         isAds = true;
         
-        // Disparar animación de entrada a ADS
         if (weaponAnimator != null && weaponAnimator.enabled)
         {
             weaponAnimator.SetTrigger(EnterAdsTrigger);
         }
         
-        // Ocultar crosshair
         GameUI gameUI = FindObjectOfType<GameUI>();
         if (gameUI != null)
         {
@@ -232,13 +233,11 @@ public class Weapon : MonoBehaviour
     {
         isAds = false;
         
-        // Disparar animación de salida de ADS
         if (weaponAnimator != null && weaponAnimator.enabled)
         {
             weaponAnimator.SetTrigger(ExitAdsTrigger);
         }
         
-        // Mostrar crosshair
         GameUI gameUI = FindObjectOfType<GameUI>();
         if (gameUI != null)
         {
@@ -247,8 +246,6 @@ public class Weapon : MonoBehaviour
     }
     
     public bool IsAds() => isAds;
-    
-    // ═══════════════════════════════════════════════
     
     private void PlaySound(AudioClip clip)
     {
@@ -259,7 +256,10 @@ public class Weapon : MonoBehaviour
     }
     
     public int GetCurrentAmmo() => weaponInstance.currentMagazineAmmo;
-    public int GetTotalAmmo() => weaponInstance.totalReserveAmmo;
+    
+    // ═══ CAMBIADO: Obtiene munición del inventario ═══
+    public int GetTotalAmmo() => weaponInstance.GetReserveAmmo(ammoInventory);
+    
     public bool IsReloading() => isReloading;
     public WeaponInstance GetWeaponInstance() => weaponInstance;
 }

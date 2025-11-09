@@ -8,9 +8,27 @@ public class WeaponInventory : MonoBehaviour
 
     [Header("Drop Settings")]
     public LayerMask groundLayer;
+    
+    // ═══ NUEVO: Referencia al inventario de munición ═══
+    [Header("Ammo System")]
+    public AmmoInventory ammoInventory;
 
     private Weapon[] weapons = new Weapon[2];
     private int activeSlotIndex = -1;
+    
+    void Awake()
+    {
+        // Asegurar que existe AmmoInventory
+        if (ammoInventory == null)
+        {
+            ammoInventory = GetComponent<AmmoInventory>();
+            
+            if (ammoInventory == null)
+            {
+                ammoInventory = gameObject.AddComponent<AmmoInventory>();
+            }
+        }
+    }
 
     public void EquipWeapon(GameObject weaponPrefab, WeaponInstance weaponInstance, int slotIndex)
     {
@@ -47,7 +65,10 @@ public class WeaponInventory : MonoBehaviour
         }
 
         weapon.enabled = true;
-        weapon.Initialize(weaponInstance);
+        
+        // ═══ CAMBIADO: Pasar AmmoInventory ═══
+        weapon.Initialize(weaponInstance, ammoInventory);
+        
         weapons[slotIndex] = weapon;
 
         weaponObj.SetActive(false);
@@ -346,5 +367,11 @@ public class WeaponInventory : MonoBehaviour
     public bool HasWeaponEquipped()
     {
         return activeSlotIndex != -1 && weapons[activeSlotIndex] != null;
+    }
+    
+    // ═══ NUEVO: Getter para AmmoInventory ═══
+    public AmmoInventory GetAmmoInventory()
+    {
+        return ammoInventory;
     }
 }

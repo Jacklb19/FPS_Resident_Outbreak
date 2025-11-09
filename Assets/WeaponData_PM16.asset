@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponName: M16
   weaponID: m16_001
-  shootingDelay: 0.08
+  shootingDelay: 0.1
   bulletsPerShot: 1
-  spread: 0.05
+  hipSpread: 0.03
+  adsSpread: 0.01
   damage: 30
   magazineSize: 30
   reloadTime: 2.5
@@ -33,8 +34,8 @@ MonoBehaviour:
   reloadSound: {fileID: 8300000, guid: 5a77252a71e1407459a4b8f8bd293248, type: 3}
   emptyMagazineSound: {fileID: 8300000, guid: 7e9ca1c3855e6f242b8ac880d0536a68, type: 3}
   impactSound: {fileID: 0}
-  idleAnimation: {fileID: 0}
-  recoilAnimation: {fileID: 0}
-  reloadAnimation: {fileID: 0}
+  idleAnimation: {fileID: 7400000, guid: e7625d2801a94c64b97e9b8b1b982290, type: 2}
+  recoilAnimation: {fileID: 7400000, guid: 7b5d95d38f932d6479d1d6f914a1642a, type: 2}
+  reloadAnimation: {fileID: 7400000, guid: 4ca8b76482ea0d5479a3cde8106d6f10, type: 2}
   weaponIcon: {fileID: 21300000, guid: 3eed7d5b823dac54c92f7d94d1b49028, type: 3}
   bulletIcon: {fileID: 21300000, guid: bc123d6b212cf4c41968b26fe6449811, type: 3}
