@@ -3,9 +3,12 @@ using UnityEngine.AI;
 
 public class Zombie : MonoBehaviour
 {
-    [Header("Configuración de Ataque")]
-    public int attackDamage = 10;
+    [Header("Rangos")]
+    public float detectionRange = 10f; //  Distancia para empezar a perseguir
     public float attackRange = 2f;
+
+    [Header("Ataque")]
+    public int attackDamage = 10;
     public float attackCooldown = 2f;
 
     [Header("Movimiento")]
@@ -16,8 +19,10 @@ public class Zombie : MonoBehaviour
     private Animator animator;
     private NavMeshAgent navAgent;
     private ZombieHealth zombieHealth;
+
     private bool isAttacking = false;
     private bool isDead = false;
+    private bool playerDetected = false; //  Nuevo estado
 
     void Start()
     {
@@ -36,21 +41,31 @@ public class Zombie : MonoBehaviour
 
     void Update()
     {
-        if (isDead) return;
+        if (isDead || target == null) return;
 
-        if (target == null)
+        float distanceToTarget = Vector3.Distance(transform.position, target.position);
+
+        //  Detectar jugador solo si está en rango
+        if (!playerDetected)
         {
-            animator.SetBool("isWalking", false);
-            return;
+            if (distanceToTarget <= detectionRange)
+            {
+                playerDetected = true;
+                Debug.Log("Zombie: ¡Jugador detectado!");
+            }
+            else
+            {
+                animator.SetBool("isWalking", false); // Idle o caminando lento
+                return;
+            }
         }
 
-        if (zombieHealth == null || zombieHealth.CurrentHealth <= 0)
+        //  Si está detectado, ya persigue.
+        if (zombieHealth.CurrentHealth <= 0)
         {
             Die();
             return;
         }
-
-        float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
         if (distanceToTarget <= attackRange)
         {
@@ -79,24 +94,27 @@ public class Zombie : MonoBehaviour
     {
         if (isDead) return;
 
-        zombieHealth.TakeDamage(amount); // ✅ LLAMAS A ZombieHealth
+        zombieHealth.TakeDamage(amount);
 
-        animator.SetTrigger("DAMAGE");
-
-        if (zombieHealth.CurrentHealth <= 0)
-        {
-            Die();
-        }
+        if (!isDead)
+            animator.SetTrigger("DAMAGE");
     }
 
-    // ✅ Muerte
-    void Die()
+    // Muerte aleatoria
+    public void Die()
     {
+        if (isDead) return;
         isDead = true;
-        navAgent.isStopped = true;
 
+        navAgent.isStopped = true;
         animator.SetBool("isWalking", false);
-        animator.SetTrigger("DIE");
+
+        int randomDeath = Random.Range(0, 2);
+
+        if (randomDeath == 0)
+            animator.SetTrigger("DIE1");
+        else
+            animator.SetTrigger("DIE2");
 
         Collider col = GetComponent<Collider>();
         if (col) col.enabled = false;
@@ -127,8 +145,11 @@ public class Zombie : MonoBehaviour
         isAttacking = false;
     }
 
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
