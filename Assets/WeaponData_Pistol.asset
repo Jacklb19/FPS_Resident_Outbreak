@@ -21,6 +21,8 @@ MonoBehaviour:
   damage: 25
   magazineSize: 7
   reloadTime: 2
+  startingReserveAmmo: 7
+  maxReserveAmmo: 60
   fireMode: 1
   raycastDistance: 1000
   hitMask:
@@ -34,6 +36,7 @@ MonoBehaviour:
   reloadSound: {fileID: 8300000, guid: 5a77252a71e1407459a4b8f8bd293248, type: 3}
   emptyMagazineSound: {fileID: 8300000, guid: 7e9ca1c3855e6f242b8ac880d0536a68, type: 3}
   impactSound: {fileID: 0}
+  ammoPickupSound: {fileID: 0}
   idleAnimation: {fileID: 7400000, guid: 78dd3c91b938d8545902490226f29487, type: 2}
   recoilAnimation: {fileID: 7400000, guid: a03286bfdbba1da40ac73b8721e28110, type: 2}
   reloadAnimation: {fileID: 7400000, guid: ba582979386d7834c96fa15ed865060f, type: 2}
