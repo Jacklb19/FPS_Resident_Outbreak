@@ -331,4 +331,13 @@ public class GameUI : MonoBehaviour
     {
         return crosshairImage != null && crosshairImage.gameObject.activeSelf;
     }
+    // En tu GameUI (o componente aparte)
+    private void OnEnable()
+    {
+        GameManager.OnScoreChanged += UpdateScore;
+        UpdateScore(GameManager.instance != null ? GameManager.instance.totalScore : 0);
+    }
+    private void OnDisable() => GameManager.OnScoreChanged -= UpdateScore;
+    private void UpdateScore(int total) { if (scoreText) scoreText.text = $"Puntos: {total}"; }
+
 }

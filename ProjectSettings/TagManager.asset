@@ -7,6 +7,7 @@ TagManager:
   - CinemachineTarget
   - Zombie
   - Weapon
+  - SpawPoint
   layers:
   - Default
   - TransparentFX
