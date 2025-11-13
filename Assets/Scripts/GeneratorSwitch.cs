@@ -1,14 +1,14 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 public class GeneratorSwitch : MonoBehaviour
 {
     [Header("Estado")]
     public bool isActivated = false;
 
-
     [Header("Spawn al activar")]
-    public WaveConfig.EnemyEntry spawnOnActivate;
+    public List<WaveConfig.EnemyEntry> spawnOnActivate = new List<WaveConfig.EnemyEntry>();
 
     [Header("Feedback Visual/Audio")]
     public AudioClip activationSound;
@@ -78,6 +78,19 @@ public class GeneratorSwitch : MonoBehaviour
         }
 
         ShowOutline(false);
+
+        // Spawnear cada EnemyEntry de la lista
+        if (spawnOnActivate != null && spawnOnActivate.Count > 0)
+        {
+            var spawnManager = FindObjectOfType<SpawnManager>();
+            foreach (var entry in spawnOnActivate)
+            {
+                if (entry != null && entry.prefab != null && entry.count > 0)
+                {
+                    spawnManager.SpawnEntryNow(entry);
+                }
+            }
+        }
 
         Debug.Log($"[Generator] {gameObject.name} activado");
         return true;

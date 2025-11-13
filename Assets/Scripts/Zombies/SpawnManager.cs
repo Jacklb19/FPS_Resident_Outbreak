@@ -134,7 +134,7 @@ public class SpawnManager : MonoBehaviour
 
         if (navAgent != null)
         {
-            navAgent.enabled = true; // ✅ HABILITAR PRIMERO
+            navAgent.enabled = true;
             navAgent.Warp(spawnPosition);
             go.transform.rotation = spawnRotation;
         }
@@ -143,11 +143,11 @@ public class SpawnManager : MonoBehaviour
             go.transform.SetPositionAndRotation(spawnPosition, spawnRotation);
         }
 
-        // ✅ RESETEAR DESPUÉS de posicionar y habilitar NavMesh
         var zombie = go.GetComponent<Zombie>();
         if (zombie != null)
         {
-            zombie.enabled = true; // ✅ RE-HABILITAR el script
+            zombie.isFromPool = true;
+            zombie.enabled = true;
             zombie.ResetZombie();
         }
 
@@ -180,10 +180,24 @@ public class SpawnManager : MonoBehaviour
     private IEnumerator SpawnGroup(WaveConfig.EnemyEntry e)
     {
         int remaining = e.count;
+        var points = e.spawnPointList.spawnPoints;
+        int spawnPointsCount = points != null ? points.Length : 0;
+        int currentSpawnIndex = 0;
+
         while (remaining > 0)
         {
             int toSpawn = Mathf.Min(e.groupSize, remaining);
-            for (int i = 0; i < toSpawn; i++) SpawnOne(e.prefab, e.spawnPointList.spawnPoints);
+            for (int i = 0; i < toSpawn; i++)
+            {
+                // Elige el próximo spawn point, o null si no hay
+                Transform spawnPoint = (spawnPointsCount > 0)
+                    ? points[currentSpawnIndex % spawnPointsCount]
+                    : null;
+                currentSpawnIndex++;
+
+                // SOLO pasa un spawn point por enemigo
+                SpawnOne(e.prefab, new Transform[] { spawnPoint });
+            }
             remaining -= toSpawn;
             yield return new WaitForSeconds(config.timeBetweenGroups);
         }
@@ -211,7 +225,11 @@ public class SpawnManager : MonoBehaviour
             for (int i = 0; i < e.groupSize; i++)
             {
                 if (!infinite && spawned >= e.count) break;
-                SpawnOne(e.prefab, e.spawnPointList.spawnPoints);
+                Transform selectedPoint = null;
+                var points = e.spawnPointList.spawnPoints;
+                if (points != null && points.Length > 0)
+                    selectedPoint = points[spawned % points.Length];
+                SpawnOne(e.prefab, new Transform[] { selectedPoint });
                 spawned++;
             }
             yield return new WaitForSeconds(period);

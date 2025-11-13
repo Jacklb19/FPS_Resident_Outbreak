@@ -16,6 +16,9 @@ public class Zombie : MonoBehaviour
     public int attackDamage;
     public float attackCooldown;
 
+    [Header("Sistema")]
+    public bool isFromPool = false;
+
     [Header("Movimiento (derivado del SO)")]
     public float pursuitSpeed;
 
@@ -193,7 +196,20 @@ public class Zombie : MonoBehaviour
         }
 
         enabled = false;
+
+
+        if (!isFromPool)
+        {
+            StartCoroutine(DestroyAfterDelay(3f));
+        }
     }
+
+    private IEnumerator DestroyAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Destroy(gameObject);
+    }
+
 
 
     public void ResetZombie()

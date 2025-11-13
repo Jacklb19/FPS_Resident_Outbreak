@@ -560,6 +560,7 @@ MonoBehaviour:
   scoreText: {fileID: 1054174543}
   timeText: {fileID: 1776958901}
   breakdownText: {fileID: 1262720359}
+  btnMenu: {fileID: 258952941}
 --- !u!114 &925514041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1106,6 +1107,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50ce3f402b379be4d9d7fbc87f0c6c8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lastLevelScene: 
   masterVolume: 100
   musicVolume: 100
   sfxVolume: 100

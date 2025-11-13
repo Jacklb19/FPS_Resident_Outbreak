@@ -39,10 +39,14 @@ public class Level3_GraveyardFlow : LevelFlow
             GameManager.instance.AddGeneratorActivated();
         }
 
-
+        // Aquí el cambio (itera sobre la lista de EnemyEntry)
         if (spawnManager != null && generator.spawnOnActivate != null)
         {
-            spawnManager.SpawnEntryNow(generator.spawnOnActivate);
+            foreach (var entry in generator.spawnOnActivate)
+            {
+                if (entry != null && entry.prefab != null && entry.count > 0)
+                    spawnManager.SpawnEntryNow(entry);
+            }
         }
 
         if (generatorsActivated >= generatorsRequired && !bossSpawned)
@@ -50,6 +54,7 @@ public class Level3_GraveyardFlow : LevelFlow
             SpawnBoss();
         }
     }
+
 
     private void SpawnBoss()
     {
