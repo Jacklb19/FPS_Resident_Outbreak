@@ -5,7 +5,7 @@ using System.Collections;
 public class Zombie : MonoBehaviour
 {
     [Header("Config")]
-    public ZombieConfig config; // Asigna desde el inspector
+    public ZombieConfig config;
 
     [Header("Rangos (derivados del SO)")]
     public float detectionRange;
@@ -35,7 +35,6 @@ public class Zombie : MonoBehaviour
         navAgent = GetComponent<NavMeshAgent>();
         zombieHealth = GetComponent<ZombieHealth>();
 
-        // Validaciones
         if (config == null)
         {
             Debug.LogError($"ZombieConfig no asignado en {gameObject.name}!", this);
@@ -49,7 +48,6 @@ public class Zombie : MonoBehaviour
             return;
         }
 
-        // Cargar parámetros desde el SO
         detectionRange = config.detectionRange;
         attackRange = config.attackRange;
         loseInterestDistance = Mathf.Max(config.loseInterestDistance, detectionRange);
@@ -59,7 +57,6 @@ public class Zombie : MonoBehaviour
 
         if (zombieHealth != null)
         {
-            // Importante: usar el setter público en lugar de tocar el campo privado. [web:61]
             zombieHealth.SetMaxHealth(config.maxHealth, true);
         }
 
@@ -83,15 +80,26 @@ public class Zombie : MonoBehaviour
         {
             Debug.LogWarning($"[Zombie {gameObject.name}] ❌ No se encontró jugador en layer Character");
         }
+
+        navAgent.enabled = false;
+        StartCoroutine(EnableNavMeshAfterDelay());
+    }
+
+    IEnumerator EnableNavMeshAfterDelay()
+    {
+        yield return new WaitForSeconds(0.1f);
+        if (navAgent != null)
+        {
+            navAgent.enabled = true;
+        }
     }
 
     void Update()
     {
-        if (isDead || target == null) return;
+        if (isDead || target == null || navAgent == null || !navAgent.isOnNavMesh) return;
 
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        // Detección
         if (!playerDetected)
         {
             if (distanceToTarget <= detectionRange)
@@ -105,30 +113,30 @@ public class Zombie : MonoBehaviour
             }
         }
 
-        // Pérdida de interés
         if (playerDetected && distanceToTarget > loseInterestDistance)
         {
             playerDetected = false;
-            navAgent.ResetPath();
-            navAgent.isStopped = true;
+            if (navAgent != null && navAgent.isOnNavMesh)
+            {
+                navAgent.ResetPath();
+                navAgent.isStopped = true;
+            }
             if (animator != null) animator.SetBool("isWalking", false);
             return;
         }
 
-        // Muerte
+
         if (zombieHealth != null && zombieHealth.CurrentHealth <= 0)
         {
             Die();
             return;
         }
 
-        // Ataque o persecución
         if (distanceToTarget <= attackRange)
         {
             navAgent.isStopped = true;
             if (animator != null) animator.SetBool("isWalking", false);
 
-            // Mirar hacia el jugador
             Vector3 dir = (target.position - transform.position).normalized;
             Quaternion look = Quaternion.LookRotation(new Vector3(dir.x, 0, dir.z));
             transform.rotation = Quaternion.Slerp(transform.rotation, look, Time.deltaTime * 5f);
@@ -139,7 +147,10 @@ public class Zombie : MonoBehaviour
         else
         {
             navAgent.isStopped = false;
-            navAgent.SetDestination(target.position);
+            if (navAgent.isOnNavMesh)
+            {
+                navAgent.SetDestination(target.position);
+            }
             if (animator != null) animator.SetBool("isWalking", true);
         }
     }
@@ -159,8 +170,12 @@ public class Zombie : MonoBehaviour
         StopAllCoroutines();
         isAttacking = false;
 
-        navAgent.isStopped = true;
-        navAgent.ResetPath();
+        if (navAgent != null && navAgent.isOnNavMesh)
+        {
+            navAgent.isStopped = true;
+            navAgent.ResetPath();
+            navAgent.enabled = false;
+        }
 
         if (animator != null)
         {
@@ -172,7 +187,15 @@ public class Zombie : MonoBehaviour
         var col = GetComponent<Collider>();
         if (col) col.enabled = false;
 
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.AddZombieKill();
+        }
+
+        enabled = false;
     }
+
+
     public void ResetZombie()
     {
         isDead = false;
@@ -180,11 +203,11 @@ public class Zombie : MonoBehaviour
         playerDetected = false;
         lastAttackTime = 0f;
 
-        if (navAgent != null)
+        if (navAgent != null && navAgent.isOnNavMesh)
         {
             navAgent.isStopped = false;
-            navAgent.ResetPath(); // ✅ Limpia cualquier path anterior
-            navAgent.velocity = Vector3.zero; // ✅ Resetea velocidad
+            navAgent.ResetPath();
+            navAgent.velocity = Vector3.zero;
         }
 
         var col = GetComponent<Collider>();
@@ -196,8 +219,6 @@ public class Zombie : MonoBehaviour
             animator.Update(0f);
         }
     }
-
-
 
     private IEnumerator PerformAttack()
     {

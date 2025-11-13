@@ -375,6 +375,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 4996774315459673024, guid: 0a68be1bd13d8694e8d8fe85574ac075, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: 01_Level1
+      objectReference: {fileID: 0}
     - target: {fileID: 6174927620114286714, guid: 0a68be1bd13d8694e8d8fe85574ac075, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -596,9 +600,20 @@ MonoBehaviour:
   sfxVolume: 100
   invertMouseY: 0
   mouseSensitivity: 1
-  currentLevel: 0
+  currentLevel: 1
   totalScore: 0
   playTime: 0
+  zombiesKilled: 0
+  generatorsActivated: 0
+  bossKilled: 0
+  medicalPackagesCollected: 0
+  wavesCompleted: 0
+  scorePerZombie: 100
+  scorePerGenerator: 200
+  scorePerBoss: 5000
+  scorePerPackage: 50
+  scorePerWave: 500
+  worldScores: 
   playerHealth: 100
   playerMaxHealth: 100
   weapon1Name: 

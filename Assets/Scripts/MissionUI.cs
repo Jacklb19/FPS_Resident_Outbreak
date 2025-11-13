@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
 
 public class MissionUI : MonoBehaviour
 {
@@ -13,7 +14,6 @@ public class MissionUI : MonoBehaviour
 
     void Start()
     {
-        // Detectar qué nivel estamos jugando y suscribirse
         hospitalFlow = FindObjectOfType<Level1_HospitalFlow>();
         streetFlow = FindObjectOfType<Level2_StreetFlow>();
         graveyardFlow = FindObjectOfType<Level3_GraveyardFlow>();
@@ -32,17 +32,15 @@ public class MissionUI : MonoBehaviour
         }
     }
 
-    // ========== NIVEL 1: HOSPITAL ==========
     void InitHospitalMission()
     {
         if (missionTitleText != null)
         {
-            missionTitleText.text = "MISIÓN: HOSPITAL";
+            missionTitleText.text = "Mision: Hospital";
         }
 
         UpdateHospitalObjective(0, hospitalFlow.packagesRequired);
 
-        // Suscribirse a cambios
         var pickups = FindObjectsOfType<MedicalPickup>();
         foreach (var pickup in pickups)
         {
@@ -54,10 +52,9 @@ public class MissionUI : MonoBehaviour
     void OnHospitalPackageCollected()
     {
         hospitalPackagesCollected++;
-        
+
         if (hospitalPackagesCollected >= hospitalFlow.packagesRequired)
         {
-            // Objetivo completado
             if (missionObjectiveText != null)
             {
                 missionObjectiveText.text = "✓ ¡Ve a la salida marcada!";
@@ -78,17 +75,15 @@ public class MissionUI : MonoBehaviour
         }
     }
 
-    // ========== NIVEL 2: CALLE ==========
     void InitStreetMission()
     {
         if (missionTitleText != null)
         {
-            missionTitleText.text = "MISIÓN: SOBREVIVE LAS OLEADAS";
+            missionTitleText.text = "Mision: Sobrevive a las oleadas";
         }
 
         UpdateStreetObjective(0, 3, 0);
 
-        // Suscribirse a eventos de oleadas
         if (streetFlow != null && streetFlow.spawnManager != null)
         {
             streetFlow.spawnManager.OnWaveStarted += OnStreetWaveStarted;
@@ -111,7 +106,6 @@ public class MissionUI : MonoBehaviour
 
         if (currentWave >= 3 && aliveEnemies == 0)
         {
-            // Completado
             if (missionObjectiveText != null)
             {
                 missionObjectiveText.text = "✓ ¡Oleadas completadas! Ve a la salida";
@@ -132,17 +126,15 @@ public class MissionUI : MonoBehaviour
         }
     }
 
-    // ========== NIVEL 3: CEMENTERIO ==========
     void InitGraveyardMission()
     {
         if (missionTitleText != null)
         {
-            missionTitleText.text = "MISIÓN: ACTIVA GENERADORES";
+            missionTitleText.text = "Mision: Activa Generadores";
         }
 
         UpdateGraveyardObjective(0, 3, false);
 
-        // Suscribirse a generadores
         var generators = FindObjectsOfType<GeneratorSwitch>();
         foreach (var gen in generators)
         {
@@ -165,15 +157,7 @@ public class MissionUI : MonoBehaviour
                 missionObjectiveText.color = Color.yellow;
             }
 
-            // Suscribirse al boss
-            if (graveyardFlow != null)
-            {
-                var boss = FindObjectOfType<BossHealth>();
-                if (boss != null)
-                {
-                    boss.OnBossDied += OnBossDefeated;
-                }
-            }
+            StartCoroutine(FindAndSubscribeToBoss());
         }
         else
         {
@@ -181,13 +165,36 @@ public class MissionUI : MonoBehaviour
         }
     }
 
+    IEnumerator FindAndSubscribeToBoss()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        var boss = FindObjectOfType<BossHealth>();
+        if (boss != null)
+        {
+            boss.OnBossDied += OnBossDefeated;
+            Debug.Log("[MissionUI] ✅ Suscrito al evento del boss correctamente");
+        }
+        else
+        {
+            Debug.LogWarning("[MissionUI] ❌ No se encontró BossHealth después de 0.5s");
+        }
+    }
+
     void OnBossDefeated()
     {
+        Debug.Log("[MissionUI] ✅ OnBossDefeated llamado - actualizando UI");
+
         bossDefeated = true;
+
         if (missionObjectiveText != null)
         {
             missionObjectiveText.text = "✓ ¡Boss derrotado! Ve a la salida";
             missionObjectiveText.color = Color.green;
+        }
+        else
+        {
+            Debug.LogError("[MissionUI] ❌ missionObjectiveText es null");
         }
     }
 
@@ -208,11 +215,22 @@ public class MissionUI : MonoBehaviour
 
     void OnDestroy()
     {
-        // Desuscribirse de eventos
         if (streetFlow != null && streetFlow.spawnManager != null)
         {
             streetFlow.spawnManager.OnWaveStarted -= OnStreetWaveStarted;
             streetFlow.spawnManager.OnEnemyCountChanged -= OnStreetEnemyCountChanged;
+        }
+
+        var generators = FindObjectsOfType<GeneratorSwitch>();
+        foreach (var gen in generators)
+        {
+            gen.onActivated -= OnGeneratorActivated;
+        }
+
+        var boss = FindObjectOfType<BossHealth>();
+        if (boss != null)
+        {
+            boss.OnBossDied -= OnBossDefeated;
         }
     }
 }

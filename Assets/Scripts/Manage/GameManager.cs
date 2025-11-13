@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Scene Configuration")]
     private Dictionary<int, string> sceneByLevel;
-    private string resultsScene = "04_GameOver";
+    private string resultsScene = "05_Victory";
     private string gameOverScene = "04_GameOver";
     private string loadingScene = "LoadingScreen";
     public static string targetScene = "";
@@ -30,6 +30,21 @@ public class GameManager : MonoBehaviour
     public int totalScore = 0;
     public float playTime = 0f;
 
+    [Header("Score Breakdown")]
+    public int zombiesKilled = 0;
+    public int generatorsActivated = 0;
+    public int bossKilled = 0;
+    public int medicalPackagesCollected = 0;
+    public int wavesCompleted = 0;
+
+    public int scorePerZombie = 100;
+    public int scorePerGenerator = 200;
+    public int scorePerBoss = 5000;
+    public int scorePerPackage = 50;
+    public int scorePerWave = 500;
+    [Header("Resumen por Mundo")]
+    public List<int> worldScores = new List<int>();
+    private int totalWorlds = 3;
     [Header("Estado del Jugador")]
     public int playerHealth = 100;
     public int playerMaxHealth = 100;
@@ -41,6 +56,7 @@ public class GameManager : MonoBehaviour
     public List<AmmoEntry> ammoEntries = new List<AmmoEntry>();
 
     private bool isPaused = false;
+    private bool isVictory = false;
 
     [System.Serializable]
     public class AmmoEntry
@@ -56,12 +72,10 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         instance = this;
         DontDestroyOnLoad(gameObject);
         InitializeScenes();
         LoadSettings();
-        LoadProgress();
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -69,7 +83,14 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
+    public void SaveWorldScore()
+    {
+        // Expande la lista si no es suficiente
+        while (worldScores.Count < currentLevel)
+            worldScores.Add(0);
 
+        worldScores[currentLevel - 1] = totalScore;
+    }
     void Start()
     {
         OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
@@ -87,12 +108,13 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (!isPaused) playTime += Time.deltaTime;
-
+        if (!isPaused && !isVictory) playTime += Time.deltaTime;
     }
 
     public void PauseGame()
     {
+        if (isVictory) return;
+
         isPaused = true;
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
@@ -114,7 +136,6 @@ public class GameManager : MonoBehaviour
         {
             playerHealth = player.CurrentHealth;
             playerMaxHealth = player.maxHealth;
-            Debug.Log($"Salud guardada: {playerHealth}/{playerMaxHealth}");
         }
 
         var weaponInventory = FindObjectOfType<WeaponInventory>();
@@ -129,8 +150,6 @@ public class GameManager : MonoBehaviour
             weapon2Ammo = weapon2 != null ? weapon2.GetCurrentAmmo() : 0;
             activeSlot = weaponInventory.GetActiveSlotIndex();
 
-            Debug.Log($"Armas guardadas: {weapon1Name} ({weapon1Ammo}), {weapon2Name} ({weapon2Ammo})");
-
             var ammoInventory = weaponInventory.GetAmmoInventory();
             ammoEntries.Clear();
 
@@ -141,19 +160,11 @@ public class GameManager : MonoBehaviour
                 {
                     int ammo = ammoInventory.GetAmmo(weaponData);
                     if (ammo > 0)
-                    {
                         ammoEntries.Add(new AmmoEntry { weaponName = weaponData.weaponName, amount = ammo });
-                        Debug.Log($"Munición guardada: {weaponData.weaponName} = {ammo}");
-                    }
                 }
             }
         }
-        else
-        {
-            Debug.LogWarning("No se encontró WeaponInventory para guardar!");
-        }
     }
-
 
     public void RestorePlayerState()
     {
@@ -162,65 +173,30 @@ public class GameManager : MonoBehaviour
         {
             player.CurrentHealth = playerHealth;
             player.maxHealth = playerMaxHealth;
-            Debug.Log($"Salud restaurada: {playerHealth}");
         }
 
         var weaponInventory = FindObjectOfType<WeaponInventory>();
         if (weaponInventory != null)
         {
-            Debug.Log($"WeaponInventory encontrado. Restaurando armas...");
-
             if (!string.IsNullOrEmpty(weapon1Name))
             {
-                Debug.Log($"Intentando cargar arma 1: WeaponData/{weapon1Name}");
                 var weaponData1 = Resources.Load<WeaponData>($"WeaponData/{weapon1Name}");
-
-                if (weaponData1 != null)
+                if (weaponData1 != null && weaponData1.modelPrefab != null)
                 {
-                    Debug.Log($"WeaponData1 cargado: {weaponData1.weaponName}");
-
-                    if (weaponData1.modelPrefab != null)
-                    {
-                        var instance1 = new WeaponInstance(weaponData1);
-                        instance1.currentMagazineAmmo = weapon1Ammo;
-                        weaponInventory.EquipWeapon(weaponData1.modelPrefab, instance1, 0);
-                        Debug.Log($"Arma 1 equipada: {weapon1Name} con {weapon1Ammo} munición");
-                    }
-                    else
-                    {
-                        Debug.LogError($"modelPrefab es NULL en {weaponData1.weaponName}");
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"No se pudo cargar WeaponData: WeaponData/{weapon1Name}");
+                    var instance1 = new WeaponInstance(weaponData1);
+                    instance1.currentMagazineAmmo = weapon1Ammo;
+                    weaponInventory.EquipWeapon(weaponData1.modelPrefab, instance1, 0);
                 }
             }
 
             if (!string.IsNullOrEmpty(weapon2Name))
             {
-                Debug.Log($"Intentando cargar arma 2: WeaponData/{weapon2Name}");
                 var weaponData2 = Resources.Load<WeaponData>($"WeaponData/{weapon2Name}");
-
-                if (weaponData2 != null)
+                if (weaponData2 != null && weaponData2.modelPrefab != null)
                 {
-                    Debug.Log($"WeaponData2 cargado: {weaponData2.weaponName}");
-
-                    if (weaponData2.modelPrefab != null)
-                    {
-                        var instance2 = new WeaponInstance(weaponData2);
-                        instance2.currentMagazineAmmo = weapon2Ammo;
-                        weaponInventory.EquipWeapon(weaponData2.modelPrefab, instance2, 1);
-                        Debug.Log($"Arma 2 equipada: {weapon2Name}");
-                    }
-                    else
-                    {
-                        Debug.LogError($"modelPrefab es NULL en {weaponData2.weaponName}");
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"No se pudo cargar WeaponData: WeaponData/{weapon2Name}");
+                    var instance2 = new WeaponInstance(weaponData2);
+                    instance2.currentMagazineAmmo = weapon2Ammo;
+                    weaponInventory.EquipWeapon(weaponData2.modelPrefab, instance2, 1);
                 }
             }
 
@@ -233,19 +209,11 @@ public class GameManager : MonoBehaviour
                 {
                     var weaponData = Resources.Load<WeaponData>($"WeaponData/{entry.weaponName}");
                     if (weaponData != null)
-                    {
                         ammoInventory.SetAmmo(weaponData, entry.amount);
-                        Debug.Log($"Munición restaurada: {entry.weaponName} = {entry.amount}");
-                    }
                 }
             }
         }
-        else
-        {
-            Debug.LogError("WeaponInventory NO encontrado!");
-        }
     }
-
 
     public void LoadGameOver()
     {
@@ -256,43 +224,61 @@ public class GameManager : MonoBehaviour
 
     public void LoadResults()
     {
-        Time.timeScale = 1f;
+        isVictory = true;
+        Time.timeScale = 0f;
+        SaveWorldScore();
         SaveProgress();
-        LoadSceneWithLoadingScreen(resultsScene);
+        SceneManager.LoadScene(resultsScene);
     }
+
+    public void AddScore(int points)
+    {
+        totalScore += points;
+        OnScoreChanged?.Invoke(totalScore);
+    }
+
+    public void AddZombieKill() { zombiesKilled++; AddScore(scorePerZombie); }
+    public void AddGeneratorActivated() { generatorsActivated++; AddScore(scorePerGenerator); }
+    public void AddBossKill() { bossKilled++; AddScore(scorePerBoss); }
+    public void AddMedicalPackage() { medicalPackagesCollected++; AddScore(scorePerPackage); }
+    public void AddWaveCompleted() { wavesCompleted++; AddScore(scorePerWave); }
 
     public void LoadLevel(int levelNumber)
     {
+        if (levelNumber == 1)
+        {
+            playTime = 0f;
+            totalScore = 0;
+            zombiesKilled = 0;
+            generatorsActivated = 0;
+            bossKilled = 0;
+            medicalPackagesCollected = 0;
+            wavesCompleted = 0;
+
+            worldScores = new List<int>();
+        }
         currentLevel = levelNumber;
         Time.timeScale = 1f;
+        isVictory = false;
         SaveProgress();
 
         if (sceneByLevel.ContainsKey(levelNumber))
-        {
             LoadSceneWithLoadingScreen(sceneByLevel[levelNumber]);
-        }
         else
-        {
             LoadResults();
-        }
     }
+
 
     public void LoadNextLevel()
     {
+        SaveWorldScore();
         SavePlayerState();
-
         var next = currentLevel + 1;
-
         if (sceneByLevel.ContainsKey(next))
-        {
             LoadLevel(next);
-        }
         else
-        {
             LoadResults();
-        }
     }
-
     private void LoadSceneWithLoadingScreen(string sceneName)
     {
         targetScene = sceneName;
@@ -302,19 +288,18 @@ public class GameManager : MonoBehaviour
     public void RestartLevel()
     {
         Time.timeScale = 1f;
-
+        isVictory = false;
         string currentSceneName = SceneManager.GetActiveScene().name;
-
         LoadSceneWithLoadingScreen(currentSceneName);
     }
-
 
     public void LoadMainMenu()
     {
         Time.timeScale = 1f;
+        isVictory = false;
         SaveSettings();
         SaveProgress();
-        LoadSceneWithLoadingScreen("00_MainMenu");
+        SceneManager.LoadScene("00_MainMenu");
     }
 
     public void QuitGame()
@@ -323,12 +308,6 @@ public class GameManager : MonoBehaviour
         SaveSettings();
         SaveProgress();
         Application.Quit();
-    }
-
-    public void AddScore(int points)
-    {
-        totalScore += points;
-        OnScoreChanged?.Invoke(totalScore);
     }
 
     void SaveSettings()
@@ -378,67 +357,52 @@ public class GameManager : MonoBehaviour
         weapon2Ammo = 0;
         activeSlot = 0;
         ammoEntries.Clear();
+        zombiesKilled = 0;
+        generatorsActivated = 0;
+        bossKilled = 0;
+        medicalPackagesCollected = 0;
+        wavesCompleted = 0;
         SaveProgress();
     }
 
     public bool IsPaused() => isPaused;
+    public bool IsVictory() => isVictory;
 
-    private bool IsLevelScene(string sceneName)
-    {
-        return levelNameRegex.IsMatch(sceneName);
-    }
+    private bool IsLevelScene(string sceneName) => levelNameRegex.IsMatch(sceneName);
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (IsLevelScene(scene.name))
         {
+            isVictory = false;
             UpdateCurrentLevelFromScene(scene.name);
-
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
             var sm = FindObjectOfType<SpawnManager>();
             if (sm != null)
-            {
                 sm.Begin();
-            }
 
             StartCoroutine(RestorePlayerStateDelayed());
         }
-
     }
+
     private void UpdateCurrentLevelFromScene(string sceneName)
     {
-
         foreach (var kvp in sceneByLevel)
         {
             if (kvp.Value == sceneName)
             {
                 currentLevel = kvp.Key;
-                Debug.Log($"Current level actualizado a: {currentLevel}");
                 return;
             }
         }
     }
+
     private IEnumerator RestorePlayerStateDelayed()
     {
-        // Esperar más tiempo para que todo se inicialice
         yield return new WaitForSeconds(0.2f);
-
-        Debug.Log($"Intentando restaurar estado. Nivel actual: {currentLevel}");
-        Debug.Log($"Armas guardadas: weapon1={weapon1Name}, weapon2={weapon2Name}");
-
-        // Restaurar siempre si hay armas guardadas O si el nivel es mayor a 1
         if (currentLevel > 1 || !string.IsNullOrEmpty(weapon1Name) || !string.IsNullOrEmpty(weapon2Name))
-        {
-            Debug.Log("Restaurando estado del jugador...");
             RestorePlayerState();
-        }
-        else
-        {
-            Debug.Log("No hay estado para restaurar (primer nivel o sin armas guardadas)");
-        }
     }
-
-
 }

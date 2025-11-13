@@ -22,6 +22,9 @@ public class PlayerWeaponController : MonoBehaviour
     private MedicalPickup currentTargetMedical;
     private MedicalPickup previousTargetMedical;
 
+    private GeneratorSwitch currentTargetGenerator;
+    private GeneratorSwitch previousTargetGenerator;
+
     void Update()
     {
         HandleWeaponSwitching();
@@ -99,6 +102,44 @@ public class PlayerWeaponController : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, pickupLayer))
         {
+            // ✅ NUEVO: Detectar GeneratorSwitch
+            GeneratorSwitch generatorSwitch = hit.collider.GetComponent<GeneratorSwitch>();
+            if (generatorSwitch != null && !generatorSwitch.isActivated)
+            {
+                currentTargetGenerator = generatorSwitch;
+
+                if (previousTargetGenerator != null && previousTargetGenerator != currentTargetGenerator)
+                    previousTargetGenerator.ShowOutline(false);
+                if (previousTargetMedical != null)
+                {
+                    previousTargetMedical.ShowOutline(false);
+                    previousTargetMedical = null;
+                }
+                if (previousTargetAmmo != null)
+                {
+                    previousTargetAmmo.ShowOutline(false);
+                    previousTargetAmmo = null;
+                }
+                if (previousTargetPickup != null)
+                {
+                    previousTargetPickup.ShowOutline(false);
+                    previousTargetPickup = null;
+                }
+
+                currentTargetGenerator.ShowOutline(true);
+                previousTargetGenerator = currentTargetGenerator;
+                currentTargetMedical = null;
+                currentTargetAmmo = null;
+                currentTargetPickup = null;
+
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    ActivateGenerator(generatorSwitch);
+                }
+
+                return;
+            }
+
             MedicalPickup medicalPickup = hit.collider.GetComponent<MedicalPickup>();
             if (medicalPickup != null)
             {
@@ -106,6 +147,11 @@ public class PlayerWeaponController : MonoBehaviour
 
                 if (previousTargetMedical != null && previousTargetMedical != currentTargetMedical)
                     previousTargetMedical.ShowOutline(false);
+                if (previousTargetGenerator != null)
+                {
+                    previousTargetGenerator.ShowOutline(false);
+                    previousTargetGenerator = null;
+                }
                 if (previousTargetAmmo != null)
                 {
                     previousTargetAmmo.ShowOutline(false);
@@ -121,6 +167,7 @@ public class PlayerWeaponController : MonoBehaviour
                 previousTargetMedical = currentTargetMedical;
                 currentTargetAmmo = null;
                 currentTargetPickup = null;
+                currentTargetGenerator = null;
 
                 if (Input.GetKeyDown(KeyCode.F))
                 {
@@ -129,7 +176,6 @@ public class PlayerWeaponController : MonoBehaviour
 
                 return;
             }
-
 
             AmmoPickup ammoPickup = hit.collider.GetComponent<AmmoPickup>();
 
@@ -147,10 +193,16 @@ public class PlayerWeaponController : MonoBehaviour
                     previousTargetPickup.ShowOutline(false);
                     previousTargetPickup = null;
                 }
+                if (previousTargetGenerator != null)
+                {
+                    previousTargetGenerator.ShowOutline(false);
+                    previousTargetGenerator = null;
+                }
 
                 currentTargetAmmo.ShowOutline(true);
                 previousTargetAmmo = currentTargetAmmo;
                 currentTargetPickup = null;
+                currentTargetGenerator = null;
 
                 if (Input.GetKeyDown(KeyCode.F))
                 {
@@ -176,10 +228,16 @@ public class PlayerWeaponController : MonoBehaviour
                     previousTargetAmmo.ShowOutline(false);
                     previousTargetAmmo = null;
                 }
+                if (previousTargetGenerator != null)
+                {
+                    previousTargetGenerator.ShowOutline(false);
+                    previousTargetGenerator = null;
+                }
 
                 currentTargetPickup.ShowOutline(true);
                 previousTargetPickup = currentTargetPickup;
                 currentTargetAmmo = null;
+                currentTargetGenerator = null;
 
                 if (Input.GetKeyDown(KeyCode.F))
                 {
@@ -200,18 +258,23 @@ public class PlayerWeaponController : MonoBehaviour
             previousTargetMedical.ShowOutline(false);
             previousTargetMedical = null;
         }
-
-
         if (previousTargetAmmo != null)
         {
             previousTargetAmmo.ShowOutline(false);
             previousTargetAmmo = null;
         }
+        if (previousTargetGenerator != null)
+        {
+            previousTargetGenerator.ShowOutline(false);
+            previousTargetGenerator = null;
+        }
 
         currentTargetPickup = null;
         currentTargetAmmo = null;
         currentTargetMedical = null;
+        currentTargetGenerator = null;
     }
+
 
     // ═══ CAMBIADO: Usa AmmoInventory directamente ═══
     void PickupAmmo(AmmoPickup ammoPickup)
@@ -234,6 +297,16 @@ public class PlayerWeaponController : MonoBehaviour
             Debug.Log("[Player] Paquete médico recolectado para misión");
             previousTargetMedical = null;
             currentTargetMedical = null;
+        }
+    }
+
+    void ActivateGenerator(GeneratorSwitch generator)
+    {
+        if (generator.TryActivate())
+        {
+            Debug.Log($"[Player] Generador activado: {generator.gameObject.name}");
+            previousTargetGenerator = null;
+            currentTargetGenerator = null;
         }
     }
 

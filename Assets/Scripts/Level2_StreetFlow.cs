@@ -28,12 +28,18 @@ public class Level2_StreetFlow : LevelFlow
 
         Debug.Log($"[Street] Oleada {currentWave}/{totalWaves} iniciada");
 
+        if (waveNumber > 1 && GameManager.instance != null)
+        {
+            GameManager.instance.AddWaveCompleted();
+        }
+
         if (currentWave >= totalWaves)
         {
             allWavesSpawned = true;
             Debug.Log("[Street] Última oleada spawneada - elimina a todos los enemigos");
         }
     }
+
 
     private void OnEnemyCountChanged(int count)
     {
@@ -79,7 +85,7 @@ public class Level2_StreetFlow : LevelFlow
         CheckExitTrigger(other);
     }
 
-        public void OnPlayerReachedExit()
+    public void OnPlayerReachedExit()
     {
         if (!exitUnlocked)
         {

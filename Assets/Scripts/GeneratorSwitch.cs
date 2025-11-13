@@ -6,6 +6,7 @@ public class GeneratorSwitch : MonoBehaviour
     [Header("Estado")]
     public bool isActivated = false;
 
+
     [Header("Spawn al activar")]
     public WaveConfig.EnemyEntry spawnOnActivate;
 
@@ -15,6 +16,7 @@ public class GeneratorSwitch : MonoBehaviour
     public Material activatedMaterial;
     public Color activatedEmissionColor = Color.green;
 
+    private Outline[] outlines;
     private Renderer rend;
     private Material originalMaterial;
 
@@ -27,36 +29,41 @@ public class GeneratorSwitch : MonoBehaviour
         {
             originalMaterial = rend.material;
         }
+
+        outlines = GetComponentsInChildren<Outline>(true);
+        ShowOutline(false);
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void ShowOutline(bool show)
     {
-        if (isActivated) return;
-        if (!other.CompareTag("Player")) return;
+        if (outlines == null || outlines.Length == 0) return;
 
-        Activate();
+        foreach (Outline outline in outlines)
+        {
+            if (outline != null)
+            {
+                outline.enabled = show;
+            }
+        }
     }
 
-    public void Activate()
+    public bool TryActivate()
     {
-        if (isActivated) return;
+        if (isActivated) return false;
 
         isActivated = true;
         onActivated?.Invoke(this);
 
-        // Audio
         if (activationSound != null)
         {
             AudioSource.PlayClipAtPoint(activationSound, transform.position);
         }
 
-        // Efecto de partículas
         if (activationEffect != null)
         {
             Instantiate(activationEffect, transform.position, Quaternion.identity);
         }
 
-        // Cambiar material/emisión
         if (rend != null)
         {
             if (activatedMaterial != null)
@@ -65,12 +72,14 @@ public class GeneratorSwitch : MonoBehaviour
             }
             else
             {
-                // Si no hay material custom, cambiar emisión
                 rend.material.EnableKeyword("_EMISSION");
                 rend.material.SetColor("_EmissionColor", activatedEmissionColor * 2f);
             }
         }
 
+        ShowOutline(false);
+
         Debug.Log($"[Generator] {gameObject.name} activado");
+        return true;
     }
 }

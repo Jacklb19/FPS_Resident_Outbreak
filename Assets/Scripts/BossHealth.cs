@@ -8,7 +8,7 @@ public class BossHealth : MonoBehaviour, IDamageable
     private int currentHealth;
 
     public event Action OnBossDied;
-    public event Action<int, int> OnDamaged; // (current, damage)
+    public event Action<int, int> OnDamaged;
 
     private bool isDead = false;
 
@@ -42,11 +42,27 @@ public class BossHealth : MonoBehaviour, IDamageable
         Debug.Log("[Boss] Derrotado");
         OnBossDied?.Invoke();
 
-        // Animación de muerte, efectos, etc.
+        var zombie = GetComponent<Zombie>();
+        if (zombie != null)
+        {
+            zombie.Die();
+        }
+
         var animator = GetComponent<Animator>();
         if (animator != null)
         {
-            animator.SetTrigger("DIE");
+            animator.SetTrigger("DIE1");
+        }
+
+        var col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.AddBossKill();
         }
 
         Destroy(gameObject, 5f);

@@ -114,11 +114,8 @@ public class SpawnManager : MonoBehaviour
 
         var pool = PoolFor(prefab);
         var go = pool.Get();
-
-        // ✅ Obtener NavMeshAgent ANTES de mover
         var navAgent = go.GetComponent<UnityEngine.AI.NavMeshAgent>();
 
-        // Obtener posición de spawn
         var p = PickSpawnPoint(overridePoints);
         Vector3 spawnPosition;
         Quaternion spawnRotation;
@@ -127,7 +124,6 @@ public class SpawnManager : MonoBehaviour
         {
             spawnPosition = p.position;
             spawnRotation = p.rotation;
-            Debug.Log($"[SpawnManager] Spawning {prefab.name} en {spawnPosition}");
         }
         else
         {
@@ -136,24 +132,22 @@ public class SpawnManager : MonoBehaviour
             spawnRotation = Quaternion.identity;
         }
 
-        // ✅ Si tiene NavMeshAgent, usar Warp en lugar de SetPositionAndRotation
         if (navAgent != null)
         {
-            // Warp teleporta al agente directamente sin ajustes
+            navAgent.enabled = true; // ✅ HABILITAR PRIMERO
             navAgent.Warp(spawnPosition);
             go.transform.rotation = spawnRotation;
-            Debug.Log($"[SpawnManager] Warped NavMeshAgent a {spawnPosition}");
         }
         else
         {
-            // Si no tiene NavMeshAgent, usar método normal
             go.transform.SetPositionAndRotation(spawnPosition, spawnRotation);
         }
 
-        // Resetear estado del zombie DESPUÉS de posicionar
+        // ✅ RESETEAR DESPUÉS de posicionar y habilitar NavMesh
         var zombie = go.GetComponent<Zombie>();
         if (zombie != null)
         {
+            zombie.enabled = true; // ✅ RE-HABILITAR el script
             zombie.ResetZombie();
         }
 
@@ -175,6 +169,7 @@ public class SpawnManager : MonoBehaviour
             zh.ResetHealth();
         }
     }
+
 
     private IEnumerator ReleaseAfterDelay(GameObject go, ObjectPool<GameObject> pool, float delay)
     {

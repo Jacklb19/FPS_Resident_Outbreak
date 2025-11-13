@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.AI;
+using System.Collections;
 
 public class Level3_GraveyardFlow : LevelFlow
 {
@@ -32,13 +34,12 @@ public class Level3_GraveyardFlow : LevelFlow
 
         Debug.Log($"[Graveyard] Generador activado: {generatorsActivated}/{generatorsRequired}");
 
-        // Puntos por activar generador
         if (GameManager.instance != null)
         {
-            GameManager.instance.AddScore(200);
+            GameManager.instance.AddGeneratorActivated();
         }
 
-        // Spawns de respuesta (Crawlers, etc.)
+
         if (spawnManager != null && generator.spawnOnActivate != null)
         {
             spawnManager.SpawnEntryNow(generator.spawnOnActivate);
@@ -57,12 +58,20 @@ public class Level3_GraveyardFlow : LevelFlow
         if (bossPrefab != null && bossSpawnPoint != null)
         {
             GameObject bossObj = Instantiate(bossPrefab, bossSpawnPoint.position, bossSpawnPoint.rotation);
+
+            NavMeshAgent bossAgent = bossObj.GetComponent<NavMeshAgent>();
+            if (bossAgent != null)
+            {
+                bossAgent.enabled = false;
+                StartCoroutine(EnableBossNavMesh(bossAgent));
+            }
+
             bossInstance = bossObj.GetComponent<BossHealth>();
 
             if (bossInstance != null)
             {
                 bossInstance.OnBossDied += OnBossDefeated;
-                Debug.Log("[Graveyard] Boss invocado - ¡Derrótalo para desbloquear la salida!");
+                Debug.Log("[Graveyard] Boss invocado");
             }
         }
         else
@@ -71,16 +80,21 @@ public class Level3_GraveyardFlow : LevelFlow
         }
     }
 
+    IEnumerator EnableBossNavMesh(NavMeshAgent agent)
+    {
+        yield return new WaitForSeconds(0.1f);
+        if (agent != null)
+        {
+            agent.enabled = true;
+        }
+    }
+
     private void OnBossDefeated()
     {
-        Debug.Log("[Graveyard] Boss derrotado - nivel completado");
-
-        // Puntos por derrotar boss
         if (GameManager.instance != null)
         {
-            GameManager.instance.AddScore(5000);
+            GameManager.instance.AddBossKill();
         }
-
         UnlockExit();
     }
 
@@ -93,20 +107,16 @@ public class Level3_GraveyardFlow : LevelFlow
         {
             exitDoor.SetActive(true);
 
-            // Activar Outline de la puerta
             Outline[] outlines = exitDoor.GetComponentsInChildren<Outline>(true);
             foreach (var outline in outlines)
             {
                 outline.enabled = true;
             }
 
-            Debug.Log("[Graveyard] Salida desbloqueada y outline activado");
+            Debug.Log("[Graveyard] Salida desbloqueada");
         }
-
-        Debug.Log("[Graveyard] Objetivo completado - Dirígete a la salida");
     }
 
-    // ✅ NUEVO: método público llamado desde ExitTriggerZone
     public void OnPlayerReachedExit()
     {
         if (!exitUnlocked)
@@ -115,9 +125,8 @@ public class Level3_GraveyardFlow : LevelFlow
             return;
         }
 
-        Debug.Log("[Graveyard] Jugador alcanzó la salida → cargando pantalla de resultados");
-        
-        // Nivel 3 va a pantalla de resultados en lugar de siguiente nivel
+        Debug.Log("[Graveyard] Jugador alcanzó la salida");
+
         if (GameManager.instance != null)
         {
             GameManager.instance.LoadResults();

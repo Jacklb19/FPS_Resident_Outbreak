@@ -30,6 +30,10 @@ public class Level1_HospitalFlow : LevelFlow
         {
             UnlockExit();
         }
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.AddMedicalPackage();
+        }
     }
 
     // ✅ NUEVO: método público llamado desde ExitTriggerZone

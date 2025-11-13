@@ -16,6 +16,7 @@ MonoBehaviour:
   weaponID: m16_001
   shootingDelay: 0.1
   bulletsPerShot: 1
+  bulletImpactForce: 15
   hipSpread: 0.03
   adsSpread: 0.01
   damage: 30
