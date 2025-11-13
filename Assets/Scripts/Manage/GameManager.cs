@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,7 +11,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Scene Configuration")]
     private Dictionary<int, string> sceneByLevel;
-    private string resultsScene = "Scenes/04_GameOver";
+    private string resultsScene = "04_GameOver";
+    private static readonly Regex levelNameRegex = new Regex(@"^\d{2}_Level\d+$", RegexOptions.Compiled);
 
     [Header("Configuración")]
     public int masterVolume = 100;
@@ -38,8 +40,7 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         InitializeScenes();
         LoadSettings();
-
-        // Suscribir a evento de carga de escenas
+        LoadProgress();
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -50,7 +51,6 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Garantiza arranque si presionas Play directo en nivel
         OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
     }
 
@@ -58,20 +58,17 @@ public class GameManager : MonoBehaviour
     {
         sceneByLevel = new Dictionary<int, string>
         {
-            { 1, "Scenes/01_Level1" },
-            { 2, "Scenes/02_Level2" },
-            { 3, "Scenes/03_Level3" }
+            { 1, "01_Level1" },
+            { 2, "02_Level2" },
+            { 3, "03_Level3" }
         };
     }
 
     void Update()
     {
-        if (!isPaused)
-        {
-            playTime += Time.deltaTime;
-        }
+        if (!isPaused) playTime += Time.deltaTime;
 
-        if (Input.GetKeyDown(KeyCode.Escape) && SceneManager.GetActiveScene().name != "00_MainMenu")
+        if (Input.GetKeyDown(KeyCode.Escape) && !SceneManager.GetActiveScene().name.Contains("MainMenu"))
         {
             if (isPaused) ResumeGame();
             else PauseGame();
@@ -82,14 +79,18 @@ public class GameManager : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f;
-        Debug.Log("Juego pausado");
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        Debug.Log("[GameManager] Juego pausado");
     }
 
     public void ResumeGame()
     {
         isPaused = false;
         Time.timeScale = 1f;
-        Debug.Log("Juego reanudado");
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        Debug.Log("[GameManager] Juego reanudado");
     }
 
     public void LoadNextLevel()
@@ -101,13 +102,14 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            SceneManager.LoadScene(resultsScene);
+            LoadResults();
         }
     }
 
     public void LoadResults()
     {
         Time.timeScale = 1f;
+        SaveProgress();
         SceneManager.LoadScene(resultsScene);
     }
 
@@ -122,7 +124,20 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            SceneManager.LoadScene(resultsScene);
+            LoadResults();
+        }
+    }
+
+    public void RestartLevel()
+    {
+        Time.timeScale = 1f;
+        if (sceneByLevel.TryGetValue(currentLevel, out var sceneName))
+        {
+            SceneManager.LoadScene(sceneName);
+        }
+        else
+        {
+            LoadResults();
         }
     }
 
@@ -130,14 +145,16 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         SaveSettings();
-        SceneManager.LoadScene("Scenes/00_MainMenu");
+        SaveProgress();
+        SceneManager.LoadScene("00_MainMenu");
     }
 
     public void QuitGame()
     {
         Time.timeScale = 1f;
         SaveSettings();
-        Debug.Log("Saliendo del juego");
+        SaveProgress();
+        Debug.Log("[GameManager] Saliendo del juego");
         Application.Quit();
     }
 
@@ -166,18 +183,45 @@ public class GameManager : MonoBehaviour
         mouseSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 1f);
     }
 
-    public bool IsPaused()
+    public void SaveProgress()
     {
-        return isPaused;
+        PlayerPrefs.SetInt("CurrentLevel", currentLevel);
+        PlayerPrefs.SetInt("TotalScore", totalScore);
+        PlayerPrefs.SetFloat("PlayTime", playTime);
+        PlayerPrefs.Save();
+    }
+
+    public void LoadProgress()
+    {
+        currentLevel = PlayerPrefs.GetInt("CurrentLevel", 1);
+        totalScore = PlayerPrefs.GetInt("TotalScore", 0);
+        playTime = PlayerPrefs.GetFloat("PlayTime", 0f);
+    }
+
+    public void ResetProgress()
+    {
+        currentLevel = 1;
+        totalScore = 0;
+        playTime = 0f;
+        SaveProgress();
+    }
+
+    public bool IsPaused() => isPaused;
+
+    private bool IsLevelScene(string sceneName)
+    {
+        return levelNameRegex.IsMatch(sceneName);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Debug.Log($"[GameManager] sceneLoaded: {scene.name}");
 
-        // Quita "Scenes/" del nombre para coincidir con scene.name
-        if (scene.name == "01_Level1" || scene.name == "02_Level2" || scene.name == "03_Level3")
+        if (IsLevelScene(scene.name))
         {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
             var sm = FindObjectOfType<SpawnManager>();
             if (sm != null)
             {

@@ -15,9 +15,12 @@ public class PlayerWeaponController : MonoBehaviour
 
     private WeaponPickup currentTargetPickup;
     private WeaponPickup previousTargetPickup;
-    
+
     private AmmoPickup currentTargetAmmo;
     private AmmoPickup previousTargetAmmo;
+
+    private MedicalPickup currentTargetMedical;
+    private MedicalPickup previousTargetMedical;
 
     void Update()
     {
@@ -96,46 +99,78 @@ public class PlayerWeaponController : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, pickupLayer))
         {
-            AmmoPickup ammoPickup = hit.collider.GetComponent<AmmoPickup>();
-            
-            if (ammoPickup != null && ammoPickup.IsAvailable())
+            MedicalPickup medicalPickup = hit.collider.GetComponent<MedicalPickup>();
+            if (medicalPickup != null)
             {
-                currentTargetAmmo = ammoPickup;
-                
-                if (previousTargetAmmo != null && previousTargetAmmo != currentTargetAmmo)
+                currentTargetMedical = medicalPickup;
+
+                if (previousTargetMedical != null && previousTargetMedical != currentTargetMedical)
+                    previousTargetMedical.ShowOutline(false);
+                if (previousTargetAmmo != null)
                 {
                     previousTargetAmmo.ShowOutline(false);
+                    previousTargetAmmo = null;
                 }
-                
                 if (previousTargetPickup != null)
                 {
                     previousTargetPickup.ShowOutline(false);
                     previousTargetPickup = null;
                 }
-                
+
+                currentTargetMedical.ShowOutline(true);
+                previousTargetMedical = currentTargetMedical;
+                currentTargetAmmo = null;
+                currentTargetPickup = null;
+
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    PickupMedical(medicalPickup);
+                }
+
+                return;
+            }
+
+
+            AmmoPickup ammoPickup = hit.collider.GetComponent<AmmoPickup>();
+
+            if (ammoPickup != null && ammoPickup.IsAvailable())
+            {
+                currentTargetAmmo = ammoPickup;
+
+                if (previousTargetAmmo != null && previousTargetAmmo != currentTargetAmmo)
+                {
+                    previousTargetAmmo.ShowOutline(false);
+                }
+
+                if (previousTargetPickup != null)
+                {
+                    previousTargetPickup.ShowOutline(false);
+                    previousTargetPickup = null;
+                }
+
                 currentTargetAmmo.ShowOutline(true);
                 previousTargetAmmo = currentTargetAmmo;
                 currentTargetPickup = null;
-                
+
                 if (Input.GetKeyDown(KeyCode.F))
                 {
                     PickupAmmo(ammoPickup);
                 }
-                
+
                 return;
             }
-            
+
             WeaponPickup weaponPickup = hit.collider.GetComponent<WeaponPickup>();
 
             if (weaponPickup != null)
             {
                 currentTargetPickup = weaponPickup;
-                
+
                 if (previousTargetPickup != null && previousTargetPickup != currentTargetPickup)
                 {
                     previousTargetPickup.ShowOutline(false);
                 }
-                
+
                 if (previousTargetAmmo != null)
                 {
                     previousTargetAmmo.ShowOutline(false);
@@ -160,7 +195,13 @@ public class PlayerWeaponController : MonoBehaviour
             previousTargetPickup.ShowOutline(false);
             previousTargetPickup = null;
         }
-        
+        if (previousTargetMedical != null)
+        {
+            previousTargetMedical.ShowOutline(false);
+            previousTargetMedical = null;
+        }
+
+
         if (previousTargetAmmo != null)
         {
             previousTargetAmmo.ShowOutline(false);
@@ -169,19 +210,30 @@ public class PlayerWeaponController : MonoBehaviour
 
         currentTargetPickup = null;
         currentTargetAmmo = null;
+        currentTargetMedical = null;
     }
-    
+
     // ═══ CAMBIADO: Usa AmmoInventory directamente ═══
     void PickupAmmo(AmmoPickup ammoPickup)
     {
         AmmoInventory ammoInventory = weaponInventory.GetAmmoInventory();
-        
+
         if (ammoPickup.TryPickup(ammoInventory, out int ammoAdded))
         {
             Debug.Log($"¡Recogiste {ammoAdded} balas de {ammoPickup.GetTargetWeaponData().weaponName}!");
-            
+
             previousTargetAmmo = null;
             currentTargetAmmo = null;
+        }
+    }
+    void PickupMedical(MedicalPickup pickup)
+    {
+        // Solo recoger para progreso de misión, sin curar
+        if (pickup.TryPickup())
+        {
+            Debug.Log("[Player] Paquete médico recolectado para misión");
+            previousTargetMedical = null;
+            currentTargetMedical = null;
         }
     }
 

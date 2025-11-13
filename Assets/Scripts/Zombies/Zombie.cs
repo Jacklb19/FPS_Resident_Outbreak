@@ -66,9 +66,23 @@ public class Zombie : MonoBehaviour
         navAgent.speed = pursuitSpeed;
         navAgent.stoppingDistance = Mathf.Clamp(attackRange * 0.6f, 0.1f, Mathf.Max(0.1f, attackRange - 0.1f));
 
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null) target = player.transform;
-        else Debug.LogWarning("Jugador no encontrado con tag 'Player'");
+        int characterLayer = LayerMask.NameToLayer("Character");
+        GameObject[] allObjects = FindObjectsOfType<GameObject>();
+
+        foreach (var obj in allObjects)
+        {
+            if (obj.layer == characterLayer && obj.GetComponent<CharacterController>() != null)
+            {
+                target = obj.transform;
+                Debug.Log($"[Zombie] ✅ Player encontrado por layer Character: {obj.name}");
+                break;
+            }
+        }
+
+        if (target == null)
+        {
+            Debug.LogWarning($"[Zombie {gameObject.name}] ❌ No se encontró jugador en layer Character");
+        }
     }
 
     void Update()
