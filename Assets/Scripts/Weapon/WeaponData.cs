@@ -23,13 +23,11 @@ public class WeaponData : ScriptableObject
     public int magazineSize = 30;
     public float reloadTime = 2f;
 
-    // ═══ NUEVO: CONFIGURACIÓN DE MUNICIÓN ═══
     [Header("Ammo Settings")]
     [Tooltip("Munición inicial de reserva al recoger el arma")]
-    public int startingReserveAmmo = 90; // 3 cargadores por defecto
-
+    public int startingReserveAmmo = 90;
     [Tooltip("Munición máxima de reserva que puedes llevar")]
-    public int maxReserveAmmo = 210; // 7 cargadores por defecto
+    public int maxReserveAmmo = 210;
 
     public enum FireMode { Semi, Burst, Full }
 
@@ -54,9 +52,12 @@ public class WeaponData : ScriptableObject
     public AudioClip emptyMagazineSound;
     public AudioClip impactSound;
 
-    // ═══ NUEVO: SONIDO DE PICKUP DE MUNICIÓN ═══
     [Tooltip("Sonido al recoger munición (opcional)")]
     public AudioClip ammoPickupSound;
+
+    [Header("Pickup Sound")]
+    [Tooltip("Sonido al recoger el arma")]
+    public AudioClip weaponPickupSound;
 
     [Header("Animations")]
     public AnimationClip idleAnimation;

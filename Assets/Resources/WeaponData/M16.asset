@@ -24,7 +24,7 @@ MonoBehaviour:
   reloadTime: 2.5
   startingReserveAmmo: 30
   maxReserveAmmo: 120
-  fireMode: 0
+  fireMode: 2
   raycastDistance: 1000
   hitMask:
     serializedVersion: 2

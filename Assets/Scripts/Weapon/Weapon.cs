@@ -149,10 +149,8 @@ public class Weapon : MonoBehaviour
 
             if (Physics.Raycast(ray, out RaycastHit hit, weaponData.raycastDistance, weaponData.hitMask))
             {
-                
                 if (hit.rigidbody != null)
                 {
-
                     hit.rigidbody.AddForceAtPosition(
                         direction * weaponData.bulletImpactForce,
                         hit.point,
@@ -160,7 +158,6 @@ public class Weapon : MonoBehaviour
                     );
                     Debug.Log($"Aplicando fuerza a: {hit.rigidbody.name}");
                 }
-
 
                 if (weaponData.impactPrefab != null)
                 {
@@ -172,7 +169,10 @@ public class Weapon : MonoBehaviour
                     Destroy(impact, 2f);
                 }
 
-                PlaySound(weaponData.impactSound);
+                if (hit.collider.CompareTag("Zombie"))
+                {
+                    PlaySound(weaponData.impactSound);
+                }
 
                 IDamageable damageable = hit.collider.GetComponent<IDamageable>();
                 if (damageable != null)
@@ -181,16 +181,18 @@ public class Weapon : MonoBehaviour
 
                     GameUI gameUI = FindObjectOfType<GameUI>();
                     if (gameUI != null)
+                    {
                         gameUI.OnCrosshairHit();
+                    }
                 }
             }
         }
-        
 
         GameUI ui = FindObjectOfType<GameUI>();
         if (ui != null)
             ui.OnCrosshairShot();
     }
+
 
 
     public void StartReload()

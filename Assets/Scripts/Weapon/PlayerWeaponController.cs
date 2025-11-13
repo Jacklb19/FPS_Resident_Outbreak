@@ -318,12 +318,15 @@ public class PlayerWeaponController : MonoBehaviour
         if (weaponInventory.HasFreeSlot(out int freeSlot))
         {
             weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, freeSlot);
+
+            // ✅ Reproducir sonido de pickup
+            PlayPickupSound(pickup.weaponData.weaponPickupSound);
+
             Destroy(pickup.gameObject);
         }
         else
         {
             int activeSlot = weaponInventory.GetActiveSlotIndex();
-
             GameObject droppedWeapon = weaponInventory.DropWeapon(activeSlot, originalPosition);
 
             if (droppedWeapon != null)
@@ -332,12 +335,24 @@ public class PlayerWeaponController : MonoBehaviour
             }
 
             weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, activeSlot);
+
+            // ✅ Reproducir sonido de pickup
+            PlayPickupSound(pickup.weaponData.weaponPickupSound);
+
             Destroy(pickup.gameObject);
         }
 
         previousTargetPickup = null;
         currentTargetPickup = null;
     }
+    private void PlayPickupSound(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, playerCamera.transform.position);
+        }
+    }
+
 
     public Weapon GetActiveWeapon() => weaponInventory.GetActiveWeapon();
     public Weapon GetWeaponInSlot(int slot) => weaponInventory.GetWeaponInSlot(slot);
