@@ -1,16 +1,23 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
-public class VictoryScreen : MonoBehaviour
+public class GameOverUI : MonoBehaviour
 {
+    [Header("Referencias UI")]
     public TMP_Text scoreText;
     public TMP_Text timeText;
-    public TMP_Text breakdownText; // Será usado para todo el resumen
+    public TMP_Text breakdownText;
+    public Button btnRestart;
+    public Button btnMenu;
 
     void Start()
     {
+        // Mostrar el cursor para UI
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        // Muestra la info del GameManager
         var gm = GameManager.instance;
         if (scoreText) scoreText.text = $"Score Final: {gm.totalScore}";
         if (timeText)
@@ -35,11 +42,21 @@ public class VictoryScreen : MonoBehaviour
                 int score = 0;
                 if (i < gm.worldScores.Count)
                     score = gm.worldScores[i];
-
                 breakdown += $"Mundo {i + 1}: <b><color=#92caff>{score}</color></b>\n";
             }
-
             breakdownText.text = breakdown;
+        }
+
+        // Asignar listeners a los botones por código (importante para managers DontDestroyOnLoad)
+        if (btnRestart != null)
+        {
+            btnRestart.onClick.RemoveAllListeners();
+            btnRestart.onClick.AddListener(() => GameManager.instance.RestartLastLevel());
+        }
+        if (btnMenu != null)
+        {
+            btnMenu.onClick.RemoveAllListeners();
+            btnMenu.onClick.AddListener(() => GameManager.instance.LoadMainMenu());
         }
     }
 }

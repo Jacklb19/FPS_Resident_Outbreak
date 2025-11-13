@@ -4492,8 +4492,20 @@ PrefabInstance:
       propertyPath: GroundLayers.m_Bits
       value: 577
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1277523016625394529, guid: f27c2f4cb09244248910209b43a40550, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: f27c2f4cb09244248910209b43a40550, type: 3}
+--- !u!114 &79507038 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1797999544075966517, guid: f27c2f4cb09244248910209b43a40550, type: 3}
+  m_PrefabInstance: {fileID: 79507037}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8d44319366a1fe44b68d6ac4600d4c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &79550100
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10509,9 +10521,8 @@ MonoBehaviour:
     count: 1
     spawnRate: 1
     groupSize: 1
-    spawnPoints:
-    - {fileID: 1631743768}
-    - {fileID: 1622611815}
+    spawnPointList:
+      spawnPoints: []
   activationSound: {fileID: 0}
   activationEffect: {fileID: 0}
   activatedMaterial: {fileID: 0}
@@ -29968,9 +29979,8 @@ MonoBehaviour:
     count: 1
     spawnRate: 1
     groupSize: 1
-    spawnPoints:
-    - {fileID: 1631743768}
-    - {fileID: 1622611815}
+    spawnPointList:
+      spawnPoints: []
   activationSound: {fileID: 0}
   activationEffect: {fileID: 0}
   activatedMaterial: {fileID: 0}
@@ -36080,7 +36090,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55c8716c2a73e634197775edf98485a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerHealth: {fileID: 727560090}
+  playerHealth: {fileID: 79507038}
   magazineAmmoText: {fileID: 1065985027}
   totalAmmoText: {fileID: 1958059358}
   ammoTypeIcon: {fileID: 908912549}
@@ -38979,17 +38989,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3413078022104897120, guid: c667a08fb204ad04daf0b1fc3cba864f, type: 3}
   m_PrefabInstance: {fileID: 726950485}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &727560090 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1277523016625394529, guid: f27c2f4cb09244248910209b43a40550, type: 3}
-  m_PrefabInstance: {fileID: 79507037}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8d44319366a1fe44b68d6ac4600d4c7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &727560095 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7362877736194039220, guid: f27c2f4cb09244248910209b43a40550, type: 3}
@@ -53282,9 +53281,8 @@ MonoBehaviour:
     count: 1
     spawnRate: 1
     groupSize: 1
-    spawnPoints:
-    - {fileID: 1631743768}
-    - {fileID: 1622611815}
+    spawnPointList:
+      spawnPoints: []
   activationSound: {fileID: 0}
   activationEffect: {fileID: 0}
   activatedMaterial: {fileID: 0}

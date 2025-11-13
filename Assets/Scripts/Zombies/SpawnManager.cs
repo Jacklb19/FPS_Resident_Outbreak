@@ -183,7 +183,7 @@ public class SpawnManager : MonoBehaviour
         while (remaining > 0)
         {
             int toSpawn = Mathf.Min(e.groupSize, remaining);
-            for (int i = 0; i < toSpawn; i++) SpawnOne(e.prefab, e.spawnPoints);
+            for (int i = 0; i < toSpawn; i++) SpawnOne(e.prefab, e.spawnPointList.spawnPoints);
             remaining -= toSpawn;
             yield return new WaitForSeconds(config.timeBetweenGroups);
         }
@@ -211,7 +211,7 @@ public class SpawnManager : MonoBehaviour
             for (int i = 0; i < e.groupSize; i++)
             {
                 if (!infinite && spawned >= e.count) break;
-                SpawnOne(e.prefab, e.spawnPoints);
+                SpawnOne(e.prefab, e.spawnPointList.spawnPoints);
                 spawned++;
             }
             yield return new WaitForSeconds(period);
@@ -259,12 +259,16 @@ public class SpawnManager : MonoBehaviour
     public void SpawnPrefabNow(GameObject prefab, int count, int groupSize = 1, Transform[] points = null)
     {
         if (prefab == null || count <= 0) return;
-        StartCoroutine(SpawnGroup(new WaveConfig.EnemyEntry
+
+        var entry = new WaveConfig.EnemyEntry
         {
             prefab = prefab,
             count = count,
             groupSize = Mathf.Max(1, groupSize),
-            spawnPoints = points
-        }));
+            spawnPointList = new WaveConfig.SpawnPointList { spawnPoints = points }
+        };
+
+        StartCoroutine(SpawnGroup(entry));
     }
+
 }

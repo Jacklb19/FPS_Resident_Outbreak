@@ -6,16 +6,21 @@ using System.Collections.Generic;
 public class WaveConfig : ScriptableObject
 {
     [Serializable]
+    public class SpawnPointList
+    {
+        public Transform[] spawnPoints = new Transform[0];
+    }
+
+    [Serializable]
     public class EnemyEntry
     {
         public GameObject prefab;
         public int count = 0;
         public float spawnRate = 1f;
         public int groupSize = 1;
-        public Transform[] spawnPoints;
+        public SpawnPointList spawnPointList = new SpawnPointList();
     }
 
-    // ✅ NUEVO: Clase wrapper para serializar oleadas
     [Serializable]
     public class Wave
     {
@@ -33,7 +38,7 @@ public class WaveConfig : ScriptableObject
     public float timeBetweenWaves = 90f;
 
     [Header("Oleadas")]
-    public List<Wave> waves = new List<Wave>();  // ✅ Ahora Unity puede mostrarlo
+    public List<Wave> waves = new List<Wave>();
 
     [Header("Spawns temporizados")]
     public List<EnemyEntry> timedEntries = new List<EnemyEntry>();

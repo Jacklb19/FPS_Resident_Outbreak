@@ -23,23 +23,48 @@ MonoBehaviour:
     - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
       count: 2
       spawnRate: 1
-      groupSize: 2
-      spawnPoints: []
+      groupSize: 1
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 4267700257611106223, guid: 829a091ad0f9b5a459e3fab08ae04605, type: 3}
+        - {fileID: 3454494378255127183, guid: eb8d9b6324a0ea048adb644e1f0861f5, type: 3}
   - enemies:
     - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
       count: 2
       spawnRate: 1
       groupSize: 2
-      spawnPoints: []
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 2102702625078739032, guid: 62bce76be3a4ac94c912ae9d0e889b8e, type: 3}
     - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
       count: 2
       spawnRate: 1
       groupSize: 2
-      spawnPoints: []
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 1360561717847695093, guid: 6d26e989f7765b540b2256fce9d4db5b, type: 3}
   - enemies:
     - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
       count: 1
       spawnRate: 1
       groupSize: 1
-      spawnPoints: []
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 4956078648454041352, guid: 4149b1883a02dcc438deabb7b1ba8b13, type: 3}
+        - {fileID: 1456494613371486885, guid: 79ec3533c0df4dd4094cc90b594731cb, type: 3}
+    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+      count: 1
+      spawnRate: 1
+      groupSize: 1
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 2272653734315417271, guid: 697ee51e5ec3994489ead68052a8cbd7, type: 3}
+    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+      count: 1
+      spawnRate: 1
+      groupSize: 1
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 1612772681770419247, guid: d426beffda0c2b540a702f86e8787426, type: 3}
+        - {fileID: 8644760437879488312, guid: 8911b5bc8e443664fb1b5f2365fe5fe7, type: 3}
   timedEntries: []

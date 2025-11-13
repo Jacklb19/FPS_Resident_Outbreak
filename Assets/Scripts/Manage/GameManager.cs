@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     private string loadingScene = "LoadingScreen";
     public static string targetScene = "";
     private static readonly Regex levelNameRegex = new Regex(@"^\d{2}_Level\d+$", RegexOptions.Compiled);
+    public string lastLevelScene = "";
 
     [Header("Configuración")]
     public int masterVolume = 100;
@@ -218,8 +219,23 @@ public class GameManager : MonoBehaviour
     public void LoadGameOver()
     {
         Time.timeScale = 1f;
+        lastLevelScene = SceneManager.GetActiveScene().name;
         SaveProgress();
         LoadSceneWithLoadingScreen(gameOverScene);
+    }
+
+    public void RestartLastLevel()
+    {
+        Time.timeScale = 1f;
+        isVictory = false;
+        if (!string.IsNullOrEmpty(lastLevelScene))
+        {
+            LoadSceneWithLoadingScreen(lastLevelScene);
+        }
+        else
+        {
+            LoadLevel(1);
+        }
     }
 
     public void LoadResults()
