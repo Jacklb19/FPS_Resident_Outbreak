@@ -28,7 +28,7 @@ public class BossHealth : MonoBehaviour, IDamageable
         Debug.Log($"[Boss] Recibió {dmg} daño. Vida: {currentHealth}/{maxHealth}");
         OnDamaged?.Invoke(currentHealth, dmg);
 
-        if (currentHealth <= 0)
+        if (currentHealth <= 0 && !isDead)
         {
             Die();
         }
@@ -59,12 +59,6 @@ public class BossHealth : MonoBehaviour, IDamageable
         {
             col.enabled = false;
         }
-
-        if (GameManager.instance != null)
-        {
-            GameManager.instance.AddBossKill();
-        }
-
         Destroy(gameObject, 5f);
     }
 
