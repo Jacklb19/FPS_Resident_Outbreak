@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -17,6 +16,7 @@ public class PlayerHealth : MonoBehaviour
     public int CurrentHealth
     {
         get { return currentHealth; }
+        set { currentHealth = Mathf.Clamp(value, 0, maxHealth); }
     }
 
     void Start()
@@ -46,8 +46,6 @@ public class PlayerHealth : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Max(currentHealth, 0);
         
-        Debug.Log("Jugador recibió " + damage + " de daño. Vida actual: " + currentHealth);
-        
         ShowDamageEffect();
 
         if (currentHealth <= 0)
@@ -60,7 +58,6 @@ public class PlayerHealth : MonoBehaviour
     {
         currentHealth += amount;
         currentHealth = Mathf.Min(currentHealth, maxHealth);
-        Debug.Log("Jugador curado. Vida actual: " + currentHealth);
     }
 
     void ShowDamageEffect()
@@ -80,8 +77,11 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
-        Debug.Log("Jugador ha muerto");
         GetComponent<CharacterController>().enabled = false;
-        Time.timeScale = 0f;
+        
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.LoadGameOver();
+        }
     }
 }

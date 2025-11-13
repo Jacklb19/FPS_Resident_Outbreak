@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 615d3db670a7062428108c6092f9060b, type: 3}
-  m_Name: WeaponData_PM16
+  m_Name: M16
   m_EditorClassIdentifier: 
   weaponName: M16
   weaponID: m16_001

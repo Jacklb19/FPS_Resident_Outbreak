@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class MainMenuConnector : MonoBehaviour
 {
@@ -13,12 +12,9 @@ public class MainMenuConnector : MonoBehaviour
 
     void Start()
     {
-        // PLAY
         if (btnNewGame != null)
             btnNewGame.onClick.AddListener(() => {
-                GameManager.instance.currentLevel = 1;
-                GameManager.instance.totalScore = 0;
-                GameManager.instance.playTime = 0f;
+                GameManager.instance.ResetProgress();
                 GameManager.instance.LoadLevel(1);
             });
 
@@ -29,10 +25,9 @@ public class MainMenuConnector : MonoBehaviour
 
         if (btnLoadGame != null)
             btnLoadGame.onClick.AddListener(() => 
-                GameManager.instance.LoadLevel(1) // O cargar última guardada
+                GameManager.instance.LoadLevel(GameManager.instance.currentLevel)
             );
 
-        // EXIT
         if (btnExit_Yes != null)
             btnExit_Yes.onClick.AddListener(() => 
                 GameManager.instance.QuitGame()
@@ -40,7 +35,7 @@ public class MainMenuConnector : MonoBehaviour
 
         if (btnExit_No != null)
             btnExit_No.onClick.AddListener(() => 
-                Debug.Log("Cancelar salida") // El asset ya lo maneja visualmente
+                Debug.Log("Cancelar salida")
             );
     }
 }
