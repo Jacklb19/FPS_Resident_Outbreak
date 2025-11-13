@@ -37,7 +37,8 @@ MonoBehaviour:
   reloadSound: {fileID: 8300000, guid: 5a77252a71e1407459a4b8f8bd293248, type: 3}
   emptyMagazineSound: {fileID: 8300000, guid: 7e9ca1c3855e6f242b8ac880d0536a68, type: 3}
   impactSound: {fileID: 0}
-  ammoPickupSound: {fileID: 0}
+  ammoPickupSound: {fileID: 8300000, guid: 9e94e10cf1b3fa548afefb948d0a8299, type: 3}
+  weaponPickupSound: {fileID: 8300000, guid: 9e94e10cf1b3fa548afefb948d0a8299, type: 3}
   idleAnimation: {fileID: 7400000, guid: e7625d2801a94c64b97e9b8b1b982290, type: 2}
   recoilAnimation: {fileID: 7400000, guid: 7b5d95d38f932d6479d1d6f914a1642a, type: 2}
   reloadAnimation: {fileID: 7400000, guid: 4ca8b76482ea0d5479a3cde8106d6f10, type: 2}
