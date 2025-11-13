@@ -93,18 +93,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("[GameManager] Juego reanudado");
     }
 
-    public void LoadNextLevel()
-    {
-        var next = currentLevel + 1;
-        if (sceneByLevel.ContainsKey(next))
-        {
-            LoadLevel(next);
-        }
-        else
-        {
-            LoadResults();
-        }
-    }
 
     public void LoadResults()
     {
@@ -118,15 +106,37 @@ public class GameManager : MonoBehaviour
         currentLevel = levelNumber;
         Time.timeScale = 1f;
 
+        // ✅ Guardar progreso ANTES de cargar la escena
+        SaveProgress();
+
         if (sceneByLevel.ContainsKey(levelNumber))
         {
+            Debug.Log($"[GameManager] Cargando nivel {levelNumber}: {sceneByLevel[levelNumber]}");
             SceneManager.LoadScene(sceneByLevel[levelNumber]);
         }
         else
         {
+            Debug.LogWarning($"[GameManager] Nivel {levelNumber} no existe, cargando pantalla de resultados");
             LoadResults();
         }
     }
+
+    public void LoadNextLevel()
+    {
+        var next = currentLevel + 1;
+        Debug.Log($"[GameManager] LoadNextLevel: currentLevel={currentLevel} → next={next}");
+
+        if (sceneByLevel.ContainsKey(next))
+        {
+            LoadLevel(next);
+        }
+        else
+        {
+            Debug.Log($"[GameManager] No hay más niveles, cargando pantalla de resultados");
+            LoadResults();
+        }
+    }
+
 
     public void RestartLevel()
     {

@@ -172,9 +172,32 @@ public class Zombie : MonoBehaviour
         var col = GetComponent<Collider>();
         if (col) col.enabled = false;
 
-        // Si luego migras a pooling, reemplaza esto por devolver al pool. [web:2]
-        Destroy(gameObject, 5f);
     }
+    public void ResetZombie()
+    {
+        isDead = false;
+        isAttacking = false;
+        playerDetected = false;
+        lastAttackTime = 0f;
+
+        if (navAgent != null)
+        {
+            navAgent.isStopped = false;
+            navAgent.ResetPath(); // ✅ Limpia cualquier path anterior
+            navAgent.velocity = Vector3.zero; // ✅ Resetea velocidad
+        }
+
+        var col = GetComponent<Collider>();
+        if (col) col.enabled = true;
+
+        if (animator != null)
+        {
+            animator.Rebind();
+            animator.Update(0f);
+        }
+    }
+
+
 
     private IEnumerator PerformAttack()
     {

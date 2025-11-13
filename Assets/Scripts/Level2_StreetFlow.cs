@@ -79,6 +79,18 @@ public class Level2_StreetFlow : LevelFlow
         CheckExitTrigger(other);
     }
 
+        public void OnPlayerReachedExit()
+    {
+        if (!exitUnlocked)
+        {
+            Debug.LogWarning("[Street] Salida aún bloqueada");
+            return;
+        }
+
+        Debug.Log("[Street] Jugador alcanzó la salida → cargando siguiente nivel");
+        GameManager.instance?.LoadNextLevel();
+    }
+
     private void OnDestroy()
     {
         if (spawnManager != null)

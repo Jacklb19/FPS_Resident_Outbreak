@@ -45,7 +45,7 @@ public class SpawnManager : MonoBehaviour
         if (config.timedSpawner && (config.timedEntries == null || config.timedEntries.Count == 0))
             Debug.LogWarning("[SpawnManager] timedSpawner activo pero sin timedEntries.");
 
-        if (config.waveSpawner && (config.waves == null || config.waves.Length == 0))
+        if (config.waveSpawner && (config.waves == null || config.waves.Count == 0))
             Debug.LogWarning("[SpawnManager] waveSpawner activo pero sin waves.");
 
         if (config.timedSpawner) StartCoroutine(RunTimed());
@@ -79,18 +79,30 @@ public class SpawnManager : MonoBehaviour
     private Transform PickSpawnPoint(Transform[] overridePoints)
     {
         var arr = (overridePoints != null && overridePoints.Length > 0) ? overridePoints : defaultSpawnPoints;
-        if (arr == null || arr.Length == 0) return null;
+
+        if (arr == null || arr.Length == 0)
+        {
+            Debug.LogError("[SpawnManager] ❌ No hay spawn points configurados");
+            return null;
+        }
+
+        Debug.Log($"[SpawnManager] Usando {arr.Length} spawn points");
 
         // Si solo hay 1 y tiene hijos, usa los hijos
         if (arr.Length == 1 && arr[0] != null && arr[0].childCount > 0)
         {
             var parent = arr[0];
             int idx = UnityEngine.Random.Range(0, parent.childCount);
-            return parent.GetChild(idx);
+            var child = parent.GetChild(idx);
+            Debug.Log($"[SpawnManager] ✅ Spawn point hijo: {child.name} | Posición: {child.position}");
+            return child;
         }
 
-        return arr[UnityEngine.Random.Range(0, arr.Length)];
+        var selected = arr[UnityEngine.Random.Range(0, arr.Length)];
+        Debug.Log($"[SpawnManager] ✅ Spawn point: {selected.name} | Posición: {selected.position}");
+        return selected;
     }
+
 
     private void SpawnOne(GameObject prefab, Transform[] overridePoints = null)
     {
@@ -100,14 +112,50 @@ public class SpawnManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[SpawnManager] Spawning {prefab.name}");
-
         var pool = PoolFor(prefab);
         var go = pool.Get();
 
+        // ✅ Obtener NavMeshAgent ANTES de mover
+        var navAgent = go.GetComponent<UnityEngine.AI.NavMeshAgent>();
+
+        // Obtener posición de spawn
         var p = PickSpawnPoint(overridePoints);
-        if (p != null) go.transform.SetPositionAndRotation(p.position, p.rotation);
-        else Debug.LogWarning("[SpawnManager] Sin spawn point válido, usando origen.");
+        Vector3 spawnPosition;
+        Quaternion spawnRotation;
+
+        if (p != null)
+        {
+            spawnPosition = p.position;
+            spawnRotation = p.rotation;
+            Debug.Log($"[SpawnManager] Spawning {prefab.name} en {spawnPosition}");
+        }
+        else
+        {
+            Debug.LogWarning("[SpawnManager] Sin spawn point válido, usando origen.");
+            spawnPosition = Vector3.zero;
+            spawnRotation = Quaternion.identity;
+        }
+
+        // ✅ Si tiene NavMeshAgent, usar Warp en lugar de SetPositionAndRotation
+        if (navAgent != null)
+        {
+            // Warp teleporta al agente directamente sin ajustes
+            navAgent.Warp(spawnPosition);
+            go.transform.rotation = spawnRotation;
+            Debug.Log($"[SpawnManager] Warped NavMeshAgent a {spawnPosition}");
+        }
+        else
+        {
+            // Si no tiene NavMeshAgent, usar método normal
+            go.transform.SetPositionAndRotation(spawnPosition, spawnRotation);
+        }
+
+        // Resetear estado del zombie DESPUÉS de posicionar
+        var zombie = go.GetComponent<Zombie>();
+        if (zombie != null)
+        {
+            zombie.ResetZombie();
+        }
 
         var zh = go.GetComponent<ZombieHealth>();
         if (zh != null)
@@ -120,8 +168,7 @@ public class SpawnManager : MonoBehaviour
                 zh.OnDied -= OnDeath;
                 aliveCount--;
                 OnEnemyCountChanged?.Invoke(aliveCount);
-                // Espera para que termine animación antes de devolver al pool
-                StartCoroutine(ReleaseAfterDelay(go, pool, 4.5f));
+                StartCoroutine(ReleaseAfterDelay(go, pool, 3f));
             }
 
             zh.OnDied += OnDeath;
@@ -179,25 +226,34 @@ public class SpawnManager : MonoBehaviour
     private IEnumerator RunWaves()
     {
         yield return new WaitForSeconds(config.initialDelay);
-        if (config.waves == null || config.waves.Length == 0) yield break;
+        if (config.waves == null || config.waves.Count == 0) yield break;
 
-        for (int w = 0; w < config.waves.Length; w++)
+        for (int w = 0; w < config.waves.Count; w++)
         {
             OnWaveStarted?.Invoke(w + 1);
 
-            var entries = config.waves[w];
-            if (entries != null)
+            var wave = config.waves[w];
+            if (wave != null && wave.enemies != null)
             {
-                foreach (var e in entries)
+                foreach (var e in wave.enemies)
                 {
                     if (e == null || e.prefab == null || e.count <= 0) continue;
                     StartCoroutine(SpawnGroup(e));
                 }
             }
 
-            yield return new WaitForSeconds(config.timeBetweenWaves);
+
+            yield return new WaitUntil(() => aliveCount == 0);
+
+
+            if (w < config.waves.Count - 1)
+            {
+                yield return new WaitForSeconds(5f);
+            }
         }
     }
+
+
 
     public void SpawnEntryNow(WaveConfig.EnemyEntry e)
     {

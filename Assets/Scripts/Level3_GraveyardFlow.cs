@@ -106,15 +106,22 @@ public class Level3_GraveyardFlow : LevelFlow
         Debug.Log("[Graveyard] Objetivo completado - Dirígete a la salida");
     }
 
-    protected override void OnLevelComplete()
+    // ✅ NUEVO: método público llamado desde ExitTriggerZone
+    public void OnPlayerReachedExit()
     {
-        // Al terminar nivel 3, vamos a resultados
-        GameManager.instance?.LoadResults();
-    }
+        if (!exitUnlocked)
+        {
+            Debug.LogWarning("[Graveyard] Salida aún bloqueada");
+            return;
+        }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        CheckExitTrigger(other);
+        Debug.Log("[Graveyard] Jugador alcanzó la salida → cargando pantalla de resultados");
+        
+        // Nivel 3 va a pantalla de resultados en lugar de siguiente nivel
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.LoadResults();
+        }
     }
 
     private void OnDestroy()

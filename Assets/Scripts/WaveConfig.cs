@@ -10,24 +10,31 @@ public class WaveConfig : ScriptableObject
     {
         public GameObject prefab;
         public int count = 0;
-        public float spawnRate = 1f;       // unidades/seg
-        public int groupSize = 1;          // tamaño de grupo
-        public Transform[] spawnPoints;    // opcional: puntos específicos por tipo
+        public float spawnRate = 1f;
+        public int groupSize = 1;
+        public Transform[] spawnPoints;
+    }
+
+    // ✅ NUEVO: Clase wrapper para serializar oleadas
+    [Serializable]
+    public class Wave
+    {
+        public List<EnemyEntry> enemies = new List<EnemyEntry>();
     }
 
     [Header("Modo")]
-    public bool timedSpawner = false;      // Nivel 1
-    public bool waveSpawner = true;        // Nivel 2
-    public bool eventSpawner = false;      // Nivel 3
+    public bool timedSpawner = false;
+    public bool waveSpawner = true;
+    public bool eventSpawner = false;
 
     [Header("Timers")]
     public float initialDelay = 2f;
-    public float timeBetweenGroups = 2f;   // entre grupos
-    public float timeBetweenWaves = 90f;   // oleadas
+    public float timeBetweenGroups = 2f;
+    public float timeBetweenWaves = 90f;
 
     [Header("Oleadas")]
-    public List<EnemyEntry>[] waves;       // Nivel 2: lista por oleada
+    public List<Wave> waves = new List<Wave>();  // ✅ Ahora Unity puede mostrarlo
 
     [Header("Spawns temporizados")]
-    public List<EnemyEntry> timedEntries;  // Nivel 1: entradas globales temporizadas
+    public List<EnemyEntry> timedEntries = new List<EnemyEntry>();
 }

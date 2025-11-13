@@ -18,4 +18,28 @@ MonoBehaviour:
   initialDelay: 2
   timeBetweenGroups: 2
   timeBetweenWaves: 90
+  waves:
+  - enemies:
+    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 2
+      spawnPoints: []
+  - enemies:
+    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 2
+      spawnPoints: []
+    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 2
+      spawnPoints: []
+  - enemies:
+    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+      count: 1
+      spawnRate: 1
+      groupSize: 1
+      spawnPoints: []
   timedEntries: []
