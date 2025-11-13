@@ -126,7 +126,8 @@ public class Zombie : MonoBehaviour
     {
         isAttacking = true;
 
-        animator.SetTrigger("DAMAGE");
+        // cambiar este trigger
+        animator.SetTrigger("ATTACK");
 
         yield return new WaitForSeconds(0.5f);
 
