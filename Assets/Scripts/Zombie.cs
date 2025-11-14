@@ -160,7 +160,7 @@ public class Zombie : MonoBehaviour
         lastAttackTime = Time.time;
 
         // Espera a que termine la animación antes de volver a moverse
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(0.7f);
 
         isAttacking = false;
         navAgent.isStopped = false;   // vuelve a perseguir
