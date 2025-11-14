@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class Zombie : MonoBehaviour
 {
     [Header("Rangos")]
-    public float detectionRange = 10f; // Distancia para empezar a perseguir
+    public float detectionRange = 10f;
     public float attackRange = 2f;
 
     [Header("Ataque")]
@@ -14,17 +14,17 @@ public class Zombie : MonoBehaviour
     [Header("Movimiento")]
     public float pursuitSpeed = 5.5f;
 
-    private float lastAttackTime = 0f;
-    private Transform target;
-    private Animator animator;
-    private NavMeshAgent navAgent;
-    private ZombieHealth zombieHealth;
+    protected float lastAttackTime = 0f;
+    protected Transform target;
+    protected Animator animator;
+    protected NavMeshAgent navAgent;
+    protected ZombieHealth zombieHealth;
 
-    private bool isAttacking = false;
-    private bool isDead = false;
-    private bool playerDetected = false; // ✅ Nuevo estado
+    protected bool isAttacking = false;
+    protected bool isDead = false;
+    protected bool playerDetected = false;
 
-    void Start()
+    protected virtual void Start()
     {
         animator = GetComponent<Animator>();
         navAgent = GetComponent<NavMeshAgent>();
@@ -43,9 +43,23 @@ public class Zombie : MonoBehaviour
     {
         if (isDead || target == null) return;
 
+        // 🔒 Mientras está atacando, no dejamos que el NavMeshAgent lo mueva
+        if (isAttacking)
+        {
+            navAgent.isStopped = true;
+            navAgent.velocity = Vector3.zero;      // por si tenía algo de velocidad
+            animator.SetBool("isWalking", false);
+
+            // Opcional: que siga mirando al jugador durante el ataque
+            Vector3 dir = (target.position - transform.position).normalized;
+            Quaternion lookRot = Quaternion.LookRotation(new Vector3(dir.x, 0, dir.z));
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.deltaTime * 5f);
+
+            return; // no procesamos nada más de movimiento mientras ataca
+        }
+
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        // ✅ Detectar jugador solo si está en rango
         if (!playerDetected)
         {
             if (distanceToTarget <= detectionRange)
@@ -55,12 +69,11 @@ public class Zombie : MonoBehaviour
             }
             else
             {
-                animator.SetBool("isWalking", false); // Idle o caminando lento
+                animator.SetBool("isWalking", false);
                 return;
             }
         }
 
-        // ✅ Si está detectado, ya persigue.
         if (zombieHealth.CurrentHealth <= 0)
         {
             Die();
@@ -70,6 +83,7 @@ public class Zombie : MonoBehaviour
         if (distanceToTarget <= attackRange)
         {
             navAgent.isStopped = true;
+            navAgent.velocity = Vector3.zero;
             animator.SetBool("isWalking", false);
 
             Vector3 direction = (target.position - transform.position).normalized;
@@ -89,7 +103,6 @@ public class Zombie : MonoBehaviour
         }
     }
 
-    // ✅ Recibir daño
     public void TakeDamage(int amount)
     {
         if (isDead) return;
@@ -100,13 +113,13 @@ public class Zombie : MonoBehaviour
             animator.SetTrigger("DAMAGE");
     }
 
-    // ✅ Muerte aleatoria
     public void Die()
     {
         if (isDead) return;
         isDead = true;
 
         navAgent.isStopped = true;
+        navAgent.velocity = Vector3.zero;
         animator.SetBool("isWalking", false);
 
         int randomDeath = Random.Range(0, 2);
@@ -122,13 +135,17 @@ public class Zombie : MonoBehaviour
         Destroy(gameObject, 5f);
     }
 
-    System.Collections.IEnumerator PerformAttack()
+    protected virtual System.Collections.IEnumerator PerformAttack()
     {
         isAttacking = true;
 
-        // cambiar este trigger
+        // Por seguridad, paramos el agente aquí también
+        navAgent.isStopped = true;
+        navAgent.velocity = Vector3.zero;
+
         animator.SetTrigger("ATTACK");
 
+        // Momento en el que el golpe "conecta"
         yield return new WaitForSeconds(0.5f);
 
         if (target != null && Vector3.Distance(transform.position, target.position) <= attackRange)
@@ -142,8 +159,11 @@ public class Zombie : MonoBehaviour
 
         lastAttackTime = Time.time;
 
-        yield return new WaitForSeconds(1f);
+        // Espera a que termine la animación antes de volver a moverse
+        yield return new WaitForSeconds(3f);
+
         isAttacking = false;
+        navAgent.isStopped = false;   // vuelve a perseguir
     }
 
     private void OnDrawGizmosSelected()
