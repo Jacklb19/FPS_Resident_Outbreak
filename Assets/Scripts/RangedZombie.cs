@@ -3,69 +3,92 @@ using UnityEngine;
 
 public class RangedZombie : Zombie
 {
-    [Header("Ataque a distancia")]
-    public GameObject projectilePrefab;
+    [Header("Ranged Settings")]
     public Transform firePoint;
-    public float projectileSpeed = 10f;
-    public float aimHeightOffset = 1.2f;
+    public float launchAngleDeg = 45f;
 
     protected override IEnumerator PerformAttack()
     {
         isAttacking = true;
 
-        // Nos aseguramos de que no se mueva durante el ataque
         navAgent.isStopped = true;
         navAgent.velocity = Vector3.zero;
-        animator.SetBool("isWalking", false);
+        if (animator != null) animator.SetBool("isWalking", false);
 
-        // Lanzar animaciÛn
-        animator.SetTrigger("ATTACK");
+        if (animator != null) animator.SetTrigger("ATTACK");
+        if (config.attackSounds != null && config.attackSounds.Length > 0 && audioSource != null)
+        {
+            var attackSound = config.attackSounds[Random.Range(0, config.attackSounds.Length)];
+            audioSource.PlayOneShot(attackSound);
+        }
 
-        // Espera hasta el momento del lanzamiento (ajusta seg˙n tu anim)
+        // Momento del lanzamiento
         yield return new WaitForSeconds(0.4f);
 
-        if (target != null)
+        if (target != null && !isDead && config.projectilePrefab != null && firePoint != null)
         {
-            // Asegurarnos de mirar al jugador justo al lanzar
-            Vector3 lookDir = (target.position - transform.position).normalized;
-            Quaternion lookRot = Quaternion.LookRotation(new Vector3(lookDir.x, 0, lookDir.z));
-            transform.rotation = lookRot;
+            Vector3 start = firePoint.position;
+            Vector3 targetPos = target.position + Vector3.up * config.aimHeightOffset;
 
-            // ---- PROYECTIL VISUAL ----
-            if (projectilePrefab != null && firePoint != null)
+            GameObject proj = Instantiate(config.projectilePrefab, start, Quaternion.identity);
+            Rigidbody rb = proj.GetComponent<Rigidbody>();
+
+            float timeToHit = 0.5f; // valor por defecto por si acaso
+
+            if (rb != null)
             {
-                Vector3 targetPos = target.position + Vector3.up * aimHeightOffset;
-                Vector3 dir = (targetPos - firePoint.position).normalized;
+                rb.useGravity = true;
 
-                GameObject proj = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(dir));
+                Vector3 toTarget = targetPos - start;
+                Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z);
+                float distanceXZ = toTargetXZ.magnitude;
 
-                Rigidbody rb = proj.GetComponent<Rigidbody>();
-                if (rb != null)
+                if (distanceXZ > 0.01f)
                 {
-                    rb.velocity = dir * projectileSpeed;
+                    Vector3 dirXZ = toTargetXZ.normalized;
+                    float angleRad = launchAngleDeg * Mathf.Deg2Rad;
+                    float v = config.projectileSpeed;
+
+                    // Velocidad inicial
+                    Vector3 velocity =
+                        dirXZ * v * Mathf.Cos(angleRad) +
+                        Vector3.up * v * Mathf.Sin(angleRad);
+
+                    rb.velocity = velocity;
+
+                    // Tiempo aproximado hasta el objetivo en XZ
+                    float horizontalSpeed = v * Mathf.Cos(angleRad);
+                    timeToHit = distanceXZ / horizontalSpeed;
                 }
             }
 
-            // ---- DA—O REAL SOLO SI SIGUE EN RANGO ----
-            float distanceToTarget = Vector3.Distance(transform.position, target.position);
-            if (distanceToTarget <= attackRange)
-            {
-                PlayerHealth playerHealth = target.GetComponent<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    playerHealth.TakeDamage(attackDamage);
-                }
-            }
+            // Corrutina que hace el da√±o cuando "llega" la piedra
+            StartCoroutine(ApplyRangedDamageAfterDelay(timeToHit));
         }
 
         lastAttackTime = Time.time;
-
-        // Espera a que termine la anim de ataque
         yield return new WaitForSeconds(0.6f);
 
         isAttacking = false;
-
-        // Si est·s fuera de rango, en el Update volver· a perseguirte
         navAgent.isStopped = false;
+    }
+
+    private IEnumerator ApplyRangedDamageAfterDelay(float delay)
+    {
+        // Esperar hasta que el proyectil deber√≠a llegar
+        yield return new WaitForSeconds(delay);
+
+        if (target == null || isDead) yield break;
+
+        // Solo da√±amos si sigue relativamente cerca (como antes)
+        float distanceToTarget = Vector3.Distance(transform.position, target.position);
+        if (distanceToTarget <= config.attackRange)
+        {
+            PlayerHealth playerHealth = target.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(config.rangedDamage);
+            }
+        }
     }
 }

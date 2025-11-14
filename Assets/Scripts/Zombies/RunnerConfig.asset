@@ -17,9 +17,23 @@ MonoBehaviour:
   loseInterestDistance: 25
   attackDamage: 15
   attackCooldown: 1.5
-  isRanged: 0
   rangedDamage: 15
   areaDamage: 5
   backstabMultiplier: 2
+  isRanged: 0
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 10
+  aimHeightOffset: 1.2
+  rangedAttackRange: 15
   pursuitSpeed: 5
   maxHealth: 75
+  idleGroans:
+  - {fileID: 8300000, guid: 9ce9bda5be78cc147a2f578d916f1210, type: 3}
+  hitSounds:
+  - {fileID: 8300000, guid: 537c9a79e7d203e419d400301283d353, type: 3}
+  deathSounds:
+  - {fileID: 8300000, guid: b5d825dd2526bc7409232d1841834d66, type: 3}
+  attackSounds:
+  - {fileID: 8300000, guid: 32c749f839a4e9d48b9fa8baae719436, type: 3}
+  idleGroanIntervalMin: 2
+  idleGroanIntervalMax: 5

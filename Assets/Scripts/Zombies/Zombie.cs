@@ -22,16 +22,17 @@ public class Zombie : MonoBehaviour
     [Header("Movimiento (derivado del SO)")]
     public float pursuitSpeed;
 
-    private float lastAttackTime = 0f;
-    private Transform target;
-    private Animator animator;
-    private NavMeshAgent navAgent;
-    private ZombieHealth zombieHealth;
+    protected float lastAttackTime = 0f;
+    protected Transform target;
+    protected Animator animator;
+    protected NavMeshAgent navAgent;
+    protected ZombieHealth zombieHealth;
+    protected AudioSource audioSource;
+    protected float nextIdleGroanTime = 0f;
 
-    private bool isAttacking = false;
-    private bool isDead = false;
-    private bool playerDetected = false;
-
+    protected bool isAttacking = false;
+    protected bool isDead = false;
+    protected bool playerDetected = false;
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -86,6 +87,13 @@ public class Zombie : MonoBehaviour
 
         navAgent.enabled = false;
         StartCoroutine(EnableNavMeshAfterDelay());
+
+        // ===== SETUP AUDIO =====
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 1f; // 3D
+        audioSource.playOnAwake = false;
     }
 
     IEnumerator EnableNavMeshAfterDelay()
@@ -128,7 +136,6 @@ public class Zombie : MonoBehaviour
             return;
         }
 
-
         if (zombieHealth != null && zombieHealth.CurrentHealth <= 0)
         {
             Die();
@@ -156,13 +163,28 @@ public class Zombie : MonoBehaviour
             }
             if (animator != null) animator.SetBool("isWalking", true);
         }
+
+        // ===== SONIDO AMBIENTAL (GRUÑIDO) =====
+        if (!isDead && config.idleGroans != null && config.idleGroans.Length > 0 && Time.time > nextIdleGroanTime)
+        {
+            var groan = config.idleGroans[Random.Range(0, config.idleGroans.Length)];
+            audioSource.PlayOneShot(groan);
+            nextIdleGroanTime = Time.time + Random.Range(config.idleGroanIntervalMin, config.idleGroanIntervalMax);
+        }
     }
 
     public void TakeDamage(int amount)
     {
         if (isDead) return;
         if (zombieHealth != null) zombieHealth.TakeDamage(amount);
-        Debug.Log("Zombie DAMAGE trigger called");
+
+        // ===== SONIDO DE DAÑO =====
+        if (!isDead && config.hitSounds != null && config.hitSounds.Length > 0 && audioSource != null)
+        {
+            var hit = config.hitSounds[Random.Range(0, config.hitSounds.Length)];
+            audioSource.PlayOneShot(hit);
+        }
+
         if (!isDead && animator != null) animator.SetTrigger("DAMAGE");
     }
 
@@ -170,6 +192,13 @@ public class Zombie : MonoBehaviour
     {
         if (isDead) return;
         isDead = true;
+
+        // ===== SONIDO DE MUERTE =====
+        if (config.deathSounds != null && config.deathSounds.Length > 0 && audioSource != null)
+        {
+            var death = config.deathSounds[Random.Range(0, config.deathSounds.Length)];
+            audioSource.PlayOneShot(death);
+        }
 
         StopAllCoroutines();
         isAttacking = false;
@@ -198,7 +227,6 @@ public class Zombie : MonoBehaviour
 
         enabled = false;
 
-
         if (!isFromPool)
         {
             StartCoroutine(DestroyAfterDelay(3f));
@@ -210,8 +238,6 @@ public class Zombie : MonoBehaviour
         yield return new WaitForSeconds(delay);
         Destroy(gameObject);
     }
-
-
 
     public void ResetZombie()
     {
@@ -237,10 +263,17 @@ public class Zombie : MonoBehaviour
         }
     }
 
-    private IEnumerator PerformAttack()
+    protected virtual IEnumerator PerformAttack()
     {
         isAttacking = true;
         if (animator != null) animator.SetTrigger("ATTACK");
+
+        // ===== SONIDO DE ATAQUE =====
+        if (config.attackSounds != null && config.attackSounds.Length > 0 && audioSource != null)
+        {
+            var attackSound = config.attackSounds[Random.Range(0, config.attackSounds.Length)];
+            audioSource.PlayOneShot(attackSound);
+        }
 
         yield return new WaitForSeconds(0.5f);
 

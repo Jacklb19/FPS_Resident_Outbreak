@@ -10,31 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c75d26efd362e8a4887d4fc8642ccc9e, type: 3}
-  m_Name: WalkerConfig 1
+  m_Name: RangedZombie
   m_EditorClassIdentifier: 
   detectionRange: 10
-  attackRange: 2
+  attackRange: 15
   loseInterestDistance: 20
   attackDamage: 10
   attackCooldown: 2
   rangedDamage: 15
   areaDamage: 5
   backstabMultiplier: 2
-  isRanged: 0
-  projectilePrefab: {fileID: 0}
+  isRanged: 1
+  projectilePrefab: {fileID: 4775641239131214492, guid: 2f092978d110f4e499a85a1a390a7384, type: 3}
   projectileSpeed: 10
   aimHeightOffset: 1.2
   rangedAttackRange: 15
   pursuitSpeed: 1.5
-  maxHealth: 100
+  maxHealth: 50
   idleGroans:
   - {fileID: 8300000, guid: 1f9fb76458bae3e45be4e0ed7ffd8a35, type: 3}
-  - {fileID: 8300000, guid: 131907cdbdf69a241b9a52fb7825f7fd, type: 3}
   hitSounds:
   - {fileID: 8300000, guid: 537c9a79e7d203e419d400301283d353, type: 3}
   deathSounds:
   - {fileID: 8300000, guid: b5d825dd2526bc7409232d1841834d66, type: 3}
   attackSounds:
-  - {fileID: 8300000, guid: 662f685f3eca7904badaebb9649c34f6, type: 3}
+  - {fileID: 8300000, guid: e4a6ab70636220a4f882c31640239115, type: 3}
   idleGroanIntervalMin: 2
   idleGroanIntervalMax: 5

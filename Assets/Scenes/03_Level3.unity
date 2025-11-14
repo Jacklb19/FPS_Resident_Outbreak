@@ -18287,7 +18287,7 @@ MonoBehaviour:
   exitDoor: {fileID: 1274762910}
   exitTrigger: {fileID: 535908614}
   generatorsRequired: 3
-  bossPrefab: {fileID: 8828877396197782226, guid: 5a3899dda803e07448fe17c8781b8d3e, type: 3}
+  bossPrefab: {fileID: 6947072076781487016, guid: 6018d013c2631b5439a1fa13a6270993, type: 3}
   bossSpawnPoint: {fileID: 2048195268}
 --- !u!1001 &354394235
 PrefabInstance:
