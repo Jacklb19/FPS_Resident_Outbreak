@@ -162,7 +162,7 @@ public class Zombie : MonoBehaviour
     {
         if (isDead) return;
         if (zombieHealth != null) zombieHealth.TakeDamage(amount);
-        if (!isDead && animator != null) animator.SetTrigger("HIT");
+        if (!isDead && animator != null) animator.SetTrigger("DAMAGE");
     }
 
     public void Die()
