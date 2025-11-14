@@ -19,6 +19,10 @@ public class Zombie : MonoBehaviour
     [Header("Sistema")]
     public bool isFromPool = false;
 
+    [Header("Audio internals")]
+    private AudioSource audioSource;
+    private float nextIdleGroanTime = 0f;
+
     [Header("Movimiento (derivado del SO)")]
     public float pursuitSpeed;
 
@@ -86,6 +90,17 @@ public class Zombie : MonoBehaviour
 
         navAgent.enabled = false;
         StartCoroutine(EnableNavMeshAfterDelay());
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 1f; // 3D
+        audioSource.playOnAwake = false;
+        if (config.spawnSound != null)
+        {
+            audioSource.PlayOneShot(config.spawnSound);
+        }
+
     }
 
     IEnumerator EnableNavMeshAfterDelay()
@@ -156,17 +171,36 @@ public class Zombie : MonoBehaviour
             }
             if (animator != null) animator.SetBool("isWalking", true);
         }
+
+        if (!isDead && config.idleGroans != null && config.idleGroans.Length > 0 && Time.time > nextIdleGroanTime)
+        {
+            var groan = config.idleGroans[Random.Range(0, config.idleGroans.Length)];
+            audioSource.PlayOneShot(groan);
+            nextIdleGroanTime = Time.time + Random.Range(config.idleGroanIntervalMin, config.idleGroanIntervalMax);
+        }
     }
 
     public void TakeDamage(int amount)
     {
         if (isDead) return;
         if (zombieHealth != null) zombieHealth.TakeDamage(amount);
+        if (!isDead && config.hitSounds != null && config.hitSounds.Length > 0 && audioSource != null)
+        {
+            var hit = config.hitSounds[Random.Range(0, config.hitSounds.Length)];
+            audioSource.PlayOneShot(hit);
+        }
+
         if (!isDead && animator != null) animator.SetTrigger("DAMAGE");
     }
 
     public void Die()
     {
+        if (config.deathSounds != null && config.deathSounds.Length > 0 && audioSource != null)
+        {
+            var death = config.deathSounds[Random.Range(0, config.deathSounds.Length)];
+            audioSource.PlayOneShot(death);
+        }
+
         if (isDead) return;
         isDead = true;
 
@@ -241,6 +275,13 @@ public class Zombie : MonoBehaviour
         isAttacking = true;
         if (animator != null) animator.SetTrigger("ATTACK");
 
+        // NUEVO: Sonido de ataque
+        if (config.attackSounds != null && config.attackSounds.Length > 0 && audioSource != null)
+        {
+            var attackSound = config.attackSounds[Random.Range(0, config.attackSounds.Length)];
+            audioSource.PlayOneShot(attackSound);
+        }
+
         yield return new WaitForSeconds(0.5f);
 
         if (isDead) yield break;
@@ -255,6 +296,7 @@ public class Zombie : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         isAttacking = false;
     }
+
 
     private void OnDrawGizmosSelected()
     {

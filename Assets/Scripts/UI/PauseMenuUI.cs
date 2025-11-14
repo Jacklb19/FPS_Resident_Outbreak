@@ -8,6 +8,7 @@ public class PauseMenuUI : MonoBehaviour
     [Header("Referencias")]
     public GameObject pauseMenuPanel;
     public Canvas pauseCanvas;
+    public Canvas gameHUDCanvas;
     public Button btnResume;
     public Button btnRestart;
     public Button btnMainMenu;
@@ -60,65 +61,75 @@ public class PauseMenuUI : MonoBehaviour
         }
     }
 
-    public void Pause()
+public void Pause()
+{
+    if (pauseMenuPanel != null)
     {
-        if (pauseMenuPanel != null)
-        {
-            pauseMenuPanel.SetActive(true);
-        }
-
-        // Desactivar Cinemachine Virtual Camera
-        if (virtualCamera != null)
-        {
-            virtualCamera.enabled = false;
-        }
-
-        if (playerMovementScript != null)
-        {
-            playerMovementScript.enabled = false;
-        }
-
-        if (GameManager.instance != null)
-        {
-            GameManager.instance.PauseGame();
-        }
-
-        var gameUI = FindObjectOfType<GameUI>();
-        if (gameUI != null)
-        {
-            gameUI.SetCrosshairVisible(false);
-        }
+        pauseMenuPanel.SetActive(true);
     }
 
-    public void Resume()
+    // Ocultar HUD del juego
+    if (gameHUDCanvas != null)
     {
-        if (pauseMenuPanel != null)
-        {
-            pauseMenuPanel.SetActive(false);
-        }
-
-        // Reactivar Cinemachine Virtual Camera
-        if (virtualCamera != null)
-        {
-            virtualCamera.enabled = true;
-        }
-
-        if (playerMovementScript != null)
-        {
-            playerMovementScript.enabled = true;
-        }
-
-        if (GameManager.instance != null)
-        {
-            GameManager.instance.ResumeGame();
-        }
-
-        var gameUI = FindObjectOfType<GameUI>();
-        if (gameUI != null)
-        {
-            gameUI.SetCrosshairVisible(true);
-        }
+        gameHUDCanvas.enabled = false; // O gameHUDCanvas.gameObject.SetActive(false);
     }
+
+    if (virtualCamera != null)
+    {
+        virtualCamera.enabled = false;
+    }
+
+    if (playerMovementScript != null)
+    {
+        playerMovementScript.enabled = false;
+    }
+
+    if (GameManager.instance != null)
+    {
+        GameManager.instance.PauseGame();
+    }
+
+    var gameUI = FindObjectOfType<GameUI>();
+    if (gameUI != null)
+    {
+        gameUI.SetCrosshairVisible(false);
+    }
+}
+
+ public void Resume()
+{
+    if (pauseMenuPanel != null)
+    {
+        pauseMenuPanel.SetActive(false);
+    }
+
+    // Mostrar HUD del juego
+    if (gameHUDCanvas != null)
+    {
+        gameHUDCanvas.enabled = true; // O gameHUDCanvas.gameObject.SetActive(true);
+    }
+
+    if (virtualCamera != null)
+    {
+        virtualCamera.enabled = true;
+    }
+
+    if (playerMovementScript != null)
+    {
+        playerMovementScript.enabled = true;
+    }
+
+    if (GameManager.instance != null)
+    {
+        GameManager.instance.ResumeGame();
+    }
+
+    var gameUI = FindObjectOfType<GameUI>();
+    if (gameUI != null)
+    {
+        gameUI.SetCrosshairVisible(true);
+    }
+}
 
     public void Restart()
     {

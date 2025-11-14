@@ -110,7 +110,6 @@ public class GameUI : MonoBehaviour
 
     void UpdateHealthDisplay()
     {
-        Debug.Log($"GameUI: vida visible = {playerHealth.CurrentHealth} (de {playerHealth.gameObject.name})");
         if (playerHealth != null && playerHealthBar != null && healthText != null)
         {
             float healthPercent = (float)playerHealth.CurrentHealth / playerHealth.maxHealth;

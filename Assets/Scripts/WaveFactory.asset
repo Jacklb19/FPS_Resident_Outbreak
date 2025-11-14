@@ -20,31 +20,31 @@ MonoBehaviour:
   timeBetweenWaves: 90
   waves:
   - enemies:
-    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+    - prefab: {fileID: 3792217189393243261, guid: adec25ff91a3b9a42b4a56cf1691d605, type: 3}
       count: 2
       spawnRate: 1
       groupSize: 1
       spawnPointList:
         spawnPoints:
-        - {fileID: 4267700257611106223, guid: 829a091ad0f9b5a459e3fab08ae04605, type: 3}
-        - {fileID: 3454494378255127183, guid: eb8d9b6324a0ea048adb644e1f0861f5, type: 3}
+        - {fileID: 8832999043184398147, guid: 7e4ecb8e85f04ab4f8d23b4462e0928d, type: 3}
+        - {fileID: 3242192603778519122, guid: f2d9b9c91784d4e48abb2287c088baa7, type: 3}
   - enemies:
-    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+    - prefab: {fileID: 5105285602686721177, guid: 1472ded6172100a4792f2c1c8d4b9713, type: 3}
       count: 2
       spawnRate: 1
       groupSize: 2
       spawnPointList:
         spawnPoints:
-        - {fileID: 2102702625078739032, guid: 62bce76be3a4ac94c912ae9d0e889b8e, type: 3}
-    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+        - {fileID: 4122928719134265973, guid: 6825feb10cb9249408a5dc89979dcdb4, type: 3}
+    - prefab: {fileID: 3792217189393243261, guid: adec25ff91a3b9a42b4a56cf1691d605, type: 3}
       count: 2
       spawnRate: 1
       groupSize: 2
       spawnPointList:
         spawnPoints:
-        - {fileID: 1360561717847695093, guid: 6d26e989f7765b540b2256fce9d4db5b, type: 3}
+        - {fileID: 4531116165717612322, guid: b62d38f52c6f28b4784127ab1e5ea5ba, type: 3}
   - enemies:
-    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+    - prefab: {fileID: 3792217189393243261, guid: adec25ff91a3b9a42b4a56cf1691d605, type: 3}
       count: 1
       spawnRate: 1
       groupSize: 1
@@ -52,7 +52,7 @@ MonoBehaviour:
         spawnPoints:
         - {fileID: 4956078648454041352, guid: 4149b1883a02dcc438deabb7b1ba8b13, type: 3}
         - {fileID: 1456494613371486885, guid: 79ec3533c0df4dd4094cc90b594731cb, type: 3}
-    - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
+    - prefab: {fileID: 5105285602686721177, guid: 1472ded6172100a4792f2c1c8d4b9713, type: 3}
       count: 1
       spawnRate: 1
       groupSize: 1

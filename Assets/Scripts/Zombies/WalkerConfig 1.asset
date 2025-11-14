@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c75d26efd362e8a4887d4fc8642ccc9e, type: 3}
   m_Name: WalkerConfig 1
   m_EditorClassIdentifier: 
-  detectionRange: 10
+  detectionRange: 15
   attackRange: 2
   loseInterestDistance: 20
   attackDamage: 10
