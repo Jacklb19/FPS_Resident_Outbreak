@@ -5092,7 +5092,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7362877736194039220, guid: f27c2f4cb09244248910209b43a40550, type: 3}
       propertyPath: SprintSpeed
-      value: 3
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7362877736194039220, guid: f27c2f4cb09244248910209b43a40550, type: 3}
       propertyPath: GroundLayers.m_Bits
