@@ -31,11 +31,16 @@ public class PauseMenuUI : MonoBehaviour
 
     public void Pause()
     {
+        Debug.Log("Pausando - HUD Root: " + (hudRoot != null ? hudRoot.name : "NULL"));
+        Debug.Log("Pausando - PauseMenu: " + (pauseMenuPanel != null ? pauseMenuPanel.name : "NULL"));
+
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(true);
 
         if (hudRoot != null)
-            hudRoot.SetActive(false);   // Oculta solo el HUD
+            hudRoot.SetActive(false);
+
+        Debug.Log("HUD desactivado, PauseMenu debería estar visible");
 
         if (virtualCamera != null)
             virtualCamera.enabled = false;
@@ -106,4 +111,17 @@ public class PauseMenuUI : MonoBehaviour
             GameManager.instance.QuitGame();
         }
     }
+
+    void Update()
+{
+    // Solo escucha ESC si no está el menú de configuración/conversación abierto
+    if (Input.GetKeyDown(KeyCode.Escape))
+    {
+        if (pauseMenuPanel != null && !pauseMenuPanel.activeSelf)
+            Pause();     // Abre menú de pausa
+        else if (pauseMenuPanel != null && pauseMenuPanel.activeSelf)
+            Resume();    // Cierra menú de pausa
+    }
+}
+
 }

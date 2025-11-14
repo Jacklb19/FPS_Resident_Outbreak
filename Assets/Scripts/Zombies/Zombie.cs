@@ -184,7 +184,6 @@ public class Zombie : MonoBehaviour
             var hit = config.hitSounds[Random.Range(0, config.hitSounds.Length)];
             audioSource.PlayOneShot(hit);
         }
-
         if (!isDead && animator != null) animator.SetTrigger("DAMAGE");
     }
 
