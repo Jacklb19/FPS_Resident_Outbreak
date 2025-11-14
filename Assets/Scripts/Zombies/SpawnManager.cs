@@ -78,7 +78,9 @@ public class SpawnManager : MonoBehaviour
 
     private Transform PickSpawnPoint(Transform[] overridePoints)
     {
-        var arr = (overridePoints != null && overridePoints.Length > 0) ? overridePoints : defaultSpawnPoints;
+        var arr = (overridePoints != null && overridePoints.Length > 0) ? overridePoints :
+          (defaultSpawnPoints != null && defaultSpawnPoints.Length > 0 ? defaultSpawnPoints : null);
+
 
         if (arr == null || arr.Length == 0)
         {

@@ -18,9 +18,13 @@ MonoBehaviour:
   initialDelay: 2
   timeBetweenGroups: 60
   timeBetweenWaves: 90
+  waves: []
   timedEntries:
-  - prefab: {fileID: 8828877396197782226, guid: 413ee22f1bf958d41978fb97263cf5f4, type: 3}
-    count: 999
-    spawnRate: 0.033
-    groupSize: 2
-    spawnPoints: []
+  - prefab: {fileID: 6010406150974421649, guid: adec25ff91a3b9a42b4a56cf1691d605, type: 3}
+    count: 5
+    spawnRate: 0.5
+    groupSize: 1
+    spawnPointList:
+      spawnPoints:
+      - {fileID: 1921327513581915940, guid: 4a35b9f0e81daa74686ba057c5d975f9, type: 3}
+      - {fileID: 3512500418523175804, guid: b04d29c6667d28d4b9cadb774ecde6b5, type: 3}
