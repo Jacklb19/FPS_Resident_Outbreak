@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c75d26efd362e8a4887d4fc8642ccc9e, type: 3}
   m_Name: BossConfig
   m_EditorClassIdentifier: 
-  detectionRange: 20
+  detectionRange: 40
   attackRange: 3
   loseInterestDistance: 40
   attackDamage: 50
