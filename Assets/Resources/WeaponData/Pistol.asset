@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 615d3db670a7062428108c6092f9060b, type: 3}
+  m_Name: Pistol
+  m_EditorClassIdentifier: 
+  weaponName: Pistol
+  weaponID: weapon_001
+  shootingDelay: 0.4
+  bulletsPerShot: 1
+  bulletImpactForce: 5
+  hipSpread: 0.04
+  adsSpread: 0.01
+  damage: 25
+  magazineSize: 7
+  reloadTime: 2
+  startingReserveAmmo: 7
+  maxReserveAmmo: 60
+  fireMode: 1
+  raycastDistance: 1000
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 2039
+  modelPrefab: {fileID: 4089052210891491727, guid: 834923cd42177c9448de8e6626f015aa, type: 3}
+  impactPrefab: {fileID: 100002, guid: ba261927bb2ae4244b20b0eb77a96415, type: 3}
+  spawnPosition: {x: 0.2, y: -0.25, z: 0.9}
+  spawnRotation: {x: 0, y: -180, z: 0}
+  shootSound: {fileID: 8300000, guid: 5ae00244e05e93d4d902acd21ee991e0, type: 3}
+  reloadSound: {fileID: 8300000, guid: 5a77252a71e1407459a4b8f8bd293248, type: 3}
+  emptyMagazineSound: {fileID: 8300000, guid: 7e9ca1c3855e6f242b8ac880d0536a68, type: 3}
+  impactSound: {fileID: 8300000, guid: e4a6ab70636220a4f882c31640239115, type: 3}
+  ammoPickupSound: {fileID: 8300000, guid: 9e94e10cf1b3fa548afefb948d0a8299, type: 3}
+  weaponPickupSound: {fileID: 8300000, guid: 9e94e10cf1b3fa548afefb948d0a8299, type: 3}
+  idleAnimation: {fileID: 7400000, guid: 78dd3c91b938d8545902490226f29487, type: 2}
+  recoilAnimation: {fileID: 7400000, guid: a03286bfdbba1da40ac73b8721e28110, type: 2}
+  reloadAnimation: {fileID: 7400000, guid: ba582979386d7834c96fa15ed865060f, type: 2}
+  weaponIcon: {fileID: 21300000, guid: d4a6e98a8468a664d9efc5d5ac6bdcd9, type: 3}
+  bulletIcon: {fileID: 21300000, guid: e6706302057787a4580929ee6a24ef5e, type: 3}

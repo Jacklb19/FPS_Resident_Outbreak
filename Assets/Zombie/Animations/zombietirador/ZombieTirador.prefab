@@ -1256,7 +1256,7 @@ GameObject:
   - component: {fileID: 2205192741205530393}
   - component: {fileID: 2205192741205530395}
   - component: {fileID: 2205192741205530372}
-  - component: {fileID: 1332671743536843122}
+  - component: {fileID: 137531160542023718}
   m_Layer: 0
   m_Name: ZombieTirador
   m_TagString: Zombie
@@ -1351,7 +1351,7 @@ CapsuleCollider:
   m_Height: 2.1
   m_Direction: 1
   m_Center: {x: 0.02, y: 1.06, z: 0}
---- !u!114 &1332671743536843122
+--- !u!114 &137531160542023718
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1363,15 +1363,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e4c4cf45a446b14b97b64d4d2cdc05d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRange: 13.52
-  attackRange: 10
-  attackDamage: 10
-  attackCooldown: 2
-  pursuitSpeed: 1.5
-  projectilePrefab: {fileID: 4775641239131214492, guid: 2f092978d110f4e499a85a1a390a7384, type: 3}
-  firePoint: {fileID: 5035638290494916939}
-  projectileSpeed: 10
-  aimHeightOffset: 1.2
+  config: {fileID: 0}
+  detectionRange: 0
+  attackRange: 0
+  loseInterestDistance: 0
+  attackDamage: 0
+  attackCooldown: 0
+  isFromPool: 0
+  pursuitSpeed: 0
+  firePoint: {fileID: 0}
 --- !u!1 &4915829372302945455
 GameObject:
   m_ObjectHideFlags: 0

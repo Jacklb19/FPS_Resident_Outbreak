@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 188cbd48e9e54d44cb84c32b7a11bd51, type: 3}
+  m_Name: WaveFactory
+  m_EditorClassIdentifier: 
+  timedSpawner: 0
+  waveSpawner: 1
+  eventSpawner: 0
+  initialDelay: 2
+  timeBetweenGroups: 2
+  timeBetweenWaves: 90
+  waves:
+  - enemies:
+    - prefab: {fileID: 5255497048134490093, guid: 3b09c5ff331a11a4a944c3952f1a1d79, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 1
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 4267700257611106223, guid: 829a091ad0f9b5a459e3fab08ae04605, type: 3}
+        - {fileID: 3454494378255127183, guid: eb8d9b6324a0ea048adb644e1f0861f5, type: 3}
+  - enemies:
+    - prefab: {fileID: 5255497048134490093, guid: 3b09c5ff331a11a4a944c3952f1a1d79, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 2
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 2102702625078739032, guid: 62bce76be3a4ac94c912ae9d0e889b8e, type: 3}
+    - prefab: {fileID: 7904072999990001122, guid: 1472ded6172100a4792f2c1c8d4b9713, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 2
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 1360561717847695093, guid: 6d26e989f7765b540b2256fce9d4db5b, type: 3}
+  - enemies:
+    - prefab: {fileID: 7904072999990001122, guid: 1472ded6172100a4792f2c1c8d4b9713, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 1
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 4956078648454041352, guid: 4149b1883a02dcc438deabb7b1ba8b13, type: 3}
+        - {fileID: 1456494613371486885, guid: 79ec3533c0df4dd4094cc90b594731cb, type: 3}
+    - prefab: {fileID: 5255497048134490093, guid: 3b09c5ff331a11a4a944c3952f1a1d79, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 1
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 2272653734315417271, guid: 697ee51e5ec3994489ead68052a8cbd7, type: 3}
+    - prefab: {fileID: 3231448114916232006, guid: c4a1e0c634bf55c4983acccfd0bc314f, type: 3}
+      count: 2
+      spawnRate: 1
+      groupSize: 1
+      spawnPointList:
+        spawnPoints:
+        - {fileID: 1612772681770419247, guid: d426beffda0c2b540a702f86e8787426, type: 3}
+        - {fileID: 8644760437879488312, guid: 8911b5bc8e443664fb1b5f2365fe5fe7, type: 3}
+  timedEntries: []

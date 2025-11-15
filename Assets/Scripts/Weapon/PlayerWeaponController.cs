@@ -15,9 +15,15 @@ public class PlayerWeaponController : MonoBehaviour
 
     private WeaponPickup currentTargetPickup;
     private WeaponPickup previousTargetPickup;
-    
+
     private AmmoPickup currentTargetAmmo;
     private AmmoPickup previousTargetAmmo;
+
+    private MedicalPickup currentTargetMedical;
+    private MedicalPickup previousTargetMedical;
+
+    private GeneratorSwitch currentTargetGenerator;
+    private GeneratorSwitch previousTargetGenerator;
 
     void Update()
     {
@@ -96,55 +102,142 @@ public class PlayerWeaponController : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance, pickupLayer))
         {
-            AmmoPickup ammoPickup = hit.collider.GetComponent<AmmoPickup>();
-            
-            if (ammoPickup != null && ammoPickup.IsAvailable())
+            // ✅ NUEVO: Detectar GeneratorSwitch
+            GeneratorSwitch generatorSwitch = hit.collider.GetComponent<GeneratorSwitch>();
+            if (generatorSwitch != null && !generatorSwitch.isActivated)
             {
-                currentTargetAmmo = ammoPickup;
-                
-                if (previousTargetAmmo != null && previousTargetAmmo != currentTargetAmmo)
-                {
-                    previousTargetAmmo.ShowOutline(false);
-                }
-                
-                if (previousTargetPickup != null)
-                {
-                    previousTargetPickup.ShowOutline(false);
-                    previousTargetPickup = null;
-                }
-                
-                currentTargetAmmo.ShowOutline(true);
-                previousTargetAmmo = currentTargetAmmo;
-                currentTargetPickup = null;
-                
-                if (Input.GetKeyDown(KeyCode.F))
-                {
-                    PickupAmmo(ammoPickup);
-                }
-                
-                return;
-            }
-            
-            WeaponPickup weaponPickup = hit.collider.GetComponent<WeaponPickup>();
+                currentTargetGenerator = generatorSwitch;
 
-            if (weaponPickup != null)
-            {
-                currentTargetPickup = weaponPickup;
-                
-                if (previousTargetPickup != null && previousTargetPickup != currentTargetPickup)
+                if (previousTargetGenerator != null && previousTargetGenerator != currentTargetGenerator)
+                    previousTargetGenerator.ShowOutline(false);
+                if (previousTargetMedical != null)
                 {
-                    previousTargetPickup.ShowOutline(false);
+                    previousTargetMedical.ShowOutline(false);
+                    previousTargetMedical = null;
                 }
-                
                 if (previousTargetAmmo != null)
                 {
                     previousTargetAmmo.ShowOutline(false);
                     previousTargetAmmo = null;
                 }
+                if (previousTargetPickup != null)
+                {
+                    previousTargetPickup.ShowOutline(false);
+                    previousTargetPickup = null;
+                }
+
+                currentTargetGenerator.ShowOutline(true);
+                previousTargetGenerator = currentTargetGenerator;
+                currentTargetMedical = null;
+                currentTargetAmmo = null;
+                currentTargetPickup = null;
+
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    ActivateGenerator(generatorSwitch);
+                }
+
+                return;
+            }
+
+            MedicalPickup medicalPickup = hit.collider.GetComponent<MedicalPickup>();
+            if (medicalPickup != null)
+            {
+                currentTargetMedical = medicalPickup;
+
+                if (previousTargetMedical != null && previousTargetMedical != currentTargetMedical)
+                    previousTargetMedical.ShowOutline(false);
+                if (previousTargetGenerator != null)
+                {
+                    previousTargetGenerator.ShowOutline(false);
+                    previousTargetGenerator = null;
+                }
+                if (previousTargetAmmo != null)
+                {
+                    previousTargetAmmo.ShowOutline(false);
+                    previousTargetAmmo = null;
+                }
+                if (previousTargetPickup != null)
+                {
+                    previousTargetPickup.ShowOutline(false);
+                    previousTargetPickup = null;
+                }
+
+                currentTargetMedical.ShowOutline(true);
+                previousTargetMedical = currentTargetMedical;
+                currentTargetAmmo = null;
+                currentTargetPickup = null;
+                currentTargetGenerator = null;
+
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    PickupMedical(medicalPickup);
+                }
+
+                return;
+            }
+
+            AmmoPickup ammoPickup = hit.collider.GetComponent<AmmoPickup>();
+
+            if (ammoPickup != null && ammoPickup.IsAvailable())
+            {
+                currentTargetAmmo = ammoPickup;
+
+                if (previousTargetAmmo != null && previousTargetAmmo != currentTargetAmmo)
+                {
+                    previousTargetAmmo.ShowOutline(false);
+                }
+
+                if (previousTargetPickup != null)
+                {
+                    previousTargetPickup.ShowOutline(false);
+                    previousTargetPickup = null;
+                }
+                if (previousTargetGenerator != null)
+                {
+                    previousTargetGenerator.ShowOutline(false);
+                    previousTargetGenerator = null;
+                }
+
+                currentTargetAmmo.ShowOutline(true);
+                previousTargetAmmo = currentTargetAmmo;
+                currentTargetPickup = null;
+                currentTargetGenerator = null;
+
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                    PickupAmmo(ammoPickup);
+                }
+
+                return;
+            }
+
+            WeaponPickup weaponPickup = hit.collider.GetComponent<WeaponPickup>();
+
+            if (weaponPickup != null)
+            {
+                currentTargetPickup = weaponPickup;
+
+                if (previousTargetPickup != null && previousTargetPickup != currentTargetPickup)
+                {
+                    previousTargetPickup.ShowOutline(false);
+                }
+
+                if (previousTargetAmmo != null)
+                {
+                    previousTargetAmmo.ShowOutline(false);
+                    previousTargetAmmo = null;
+                }
+                if (previousTargetGenerator != null)
+                {
+                    previousTargetGenerator.ShowOutline(false);
+                    previousTargetGenerator = null;
+                }
 
                 currentTargetPickup.ShowOutline(true);
                 previousTargetPickup = currentTargetPickup;
                 currentTargetAmmo = null;
+                currentTargetGenerator = null;
 
                 if (Input.GetKeyDown(KeyCode.F))
                 {
@@ -160,28 +253,60 @@ public class PlayerWeaponController : MonoBehaviour
             previousTargetPickup.ShowOutline(false);
             previousTargetPickup = null;
         }
-        
+        if (previousTargetMedical != null)
+        {
+            previousTargetMedical.ShowOutline(false);
+            previousTargetMedical = null;
+        }
         if (previousTargetAmmo != null)
         {
             previousTargetAmmo.ShowOutline(false);
             previousTargetAmmo = null;
         }
+        if (previousTargetGenerator != null)
+        {
+            previousTargetGenerator.ShowOutline(false);
+            previousTargetGenerator = null;
+        }
 
         currentTargetPickup = null;
         currentTargetAmmo = null;
+        currentTargetMedical = null;
+        currentTargetGenerator = null;
     }
-    
+
+
     // ═══ CAMBIADO: Usa AmmoInventory directamente ═══
     void PickupAmmo(AmmoPickup ammoPickup)
     {
         AmmoInventory ammoInventory = weaponInventory.GetAmmoInventory();
-        
+
         if (ammoPickup.TryPickup(ammoInventory, out int ammoAdded))
         {
             Debug.Log($"¡Recogiste {ammoAdded} balas de {ammoPickup.GetTargetWeaponData().weaponName}!");
-            
+
             previousTargetAmmo = null;
             currentTargetAmmo = null;
+        }
+    }
+    void PickupMedical(MedicalPickup pickup)
+    {
+        // Solo recoger para progreso de misión, sin curar
+        if (pickup.TryPickup())
+        {
+            Debug.Log("[Player] Paquete médico recolectado para misión");
+            previousTargetMedical = null;
+            currentTargetMedical = null;
+        }
+    }
+
+    void ActivateGenerator(GeneratorSwitch generator)
+    {
+        if (generator.TryActivate())
+        {
+            Debug.Log($"[Player] Generador activado: {generator.gameObject.name}");
+            previousTargetGenerator = null;
+            currentTargetGenerator = null;
         }
     }
 
@@ -193,12 +318,15 @@ public class PlayerWeaponController : MonoBehaviour
         if (weaponInventory.HasFreeSlot(out int freeSlot))
         {
             weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, freeSlot);
+
+            // ✅ Reproducir sonido de pickup
+            PlayPickupSound(pickup.weaponData.weaponPickupSound);
+
             Destroy(pickup.gameObject);
         }
         else
         {
             int activeSlot = weaponInventory.GetActiveSlotIndex();
-
             GameObject droppedWeapon = weaponInventory.DropWeapon(activeSlot, originalPosition);
 
             if (droppedWeapon != null)
@@ -207,12 +335,24 @@ public class PlayerWeaponController : MonoBehaviour
             }
 
             weaponInventory.EquipWeapon(pickup.weaponData.modelPrefab, weaponInstance, activeSlot);
+
+            // ✅ Reproducir sonido de pickup
+            PlayPickupSound(pickup.weaponData.weaponPickupSound);
+
             Destroy(pickup.gameObject);
         }
 
         previousTargetPickup = null;
         currentTargetPickup = null;
     }
+    private void PlayPickupSound(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, playerCamera.transform.position);
+        }
+    }
+
 
     public Weapon GetActiveWeapon() => weaponInventory.GetActiveWeapon();
     public Weapon GetWeaponInSlot(int slot) => weaponInventory.GetWeaponInSlot(slot);

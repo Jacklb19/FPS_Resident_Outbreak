@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+using System;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -11,18 +11,34 @@ public class PlayerHealth : MonoBehaviour
     [Header("Efectos")]
     public Image damageOverlay;
     public float damageFadeSpeed = 2f;
-    
+
+    [Header("Sonidos")]
+    public AudioClip damageSound;      // Clip de daño
+    public AudioSource audioSource;
+
     private float targetAlpha = 0f;
-    
+
+    // Evento para avisar cambios en la salud a la UI u otros sistemas
+    public event Action<int> OnHealthChanged;
+
     public int CurrentHealth
     {
         get { return currentHealth; }
+        set
+        {
+            int newValue = Mathf.Clamp(value, 0, maxHealth);
+            if (currentHealth != newValue)
+            {
+                currentHealth = newValue;
+                OnHealthChanged?.Invoke(currentHealth);
+            }
+        }
     }
 
     void Start()
     {
-        currentHealth = maxHealth;
-        
+        CurrentHealth = maxHealth;
+
         if (damageOverlay != null)
         {
             Color color = damageOverlay.color;
@@ -43,14 +59,17 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        currentHealth -= damage;
-        currentHealth = Mathf.Max(currentHealth, 0);
-        
-        Debug.Log("Jugador recibió " + damage + " de daño. Vida actual: " + currentHealth);
-        
+        CurrentHealth -= damage;
+        Debug.Log($"TakeDamage: vida actual = {CurrentHealth} (en {gameObject.name})");
+
         ShowDamageEffect();
 
-        if (currentHealth <= 0)
+        if (audioSource != null && damageSound != null)
+        {
+            audioSource.PlayOneShot(damageSound);
+        }
+
+        if (CurrentHealth <= 0)
         {
             Die();
         }
@@ -58,9 +77,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void Heal(int amount)
     {
-        currentHealth += amount;
-        currentHealth = Mathf.Min(currentHealth, maxHealth);
-        Debug.Log("Jugador curado. Vida actual: " + currentHealth);
+        CurrentHealth += amount;
     }
 
     void ShowDamageEffect()
@@ -80,8 +97,11 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
-        Debug.Log("Jugador ha muerto");
         GetComponent<CharacterController>().enabled = false;
-        Time.timeScale = 0f;
+
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.LoadGameOver();
+        }
     }
 }

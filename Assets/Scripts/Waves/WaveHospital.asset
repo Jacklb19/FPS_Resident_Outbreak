@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 188cbd48e9e54d44cb84c32b7a11bd51, type: 3}
+  m_Name: WaveHospital
+  m_EditorClassIdentifier: 
+  timedSpawner: 1
+  waveSpawner: 0
+  eventSpawner: 0
+  initialDelay: 2
+  timeBetweenGroups: 60
+  timeBetweenWaves: 90
+  waves: []
+  timedEntries:
+  - prefab: {fileID: 5255497048134490093, guid: 3b09c5ff331a11a4a944c3952f1a1d79, type: 3}
+    count: 5
+    spawnRate: 0.5
+    groupSize: 1
+    spawnPointList:
+      spawnPoints:
+      - {fileID: 4130029922987814598, guid: d8f00050ce28d814d97551cb9b9a94bc, type: 3}
+      - {fileID: 5306860176149440696, guid: 9edce9207e777854897992b085c099e9, type: 3}
+      - {fileID: 3556942689337358732, guid: fbbc5ff61fff6194887abaead8f63758, type: 3}
